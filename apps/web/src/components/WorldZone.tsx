@@ -40,7 +40,7 @@ export function WorldCards({ world }: { world: WorldState }) {
         <h3>Сундуки</h3>
         <p>{locked ? "Награда после Daily ждёт!" : "Открой награды"}</p>
         <div className="closed" />
-        <img className="mini-art" src="/myshmat-assets/chest-large.png" alt="" aria-hidden="true" />
+        <img className="mini-art" src="/myshmat-assets/chest-large.webp" alt="" aria-hidden="true" />
       </CardOrLink>
 
       <div className="world-pair">
@@ -50,7 +50,7 @@ export function WorldCards({ world }: { world: WorldState }) {
           className={`mini card duel${duelsOn ? "" : " is-locked"}`}
         >
           <h3>Дуэли</h3>
-          <img className="mini-art" src="/myshmat-assets/duel-large.png" alt="" aria-hidden="true" />
+          <img className="mini-art" src="/myshmat-assets/duel-large.webp" alt="" aria-hidden="true" />
         </CardOrLink>
 
         <CardOrLink locked={locked} href="/rewards" className={`mini card trophy${lockedClass}`}>

@@ -1,5 +1,5 @@
 -- МышМат — setup_all.sql: все миграции одним файлом (для Supabase SQL Editor).
--- Порядок: 0001 init → 0002 seed → 0003 auth → 0004 submit → 0005 platform → 0006 users → 0007 daily content → 0008 storage.
+-- 0001 init → 0002 seed → 0003 auth → 0004 submit → 0005 platform → 0006 users → 0007 daily → 0008 storage → 0009 topics.
 
 -- ═══════════════ packages/db/0001_init.sql ═══════════════
 -- МышМат — миграция 0001 (MVP, ТЗ v1 с механикой МышРутки)
@@ -759,4 +759,24 @@ on conflict (id) do nothing;
 insert into storage.buckets (id, name, public)
 values ('uploads', 'uploads', true)
 on conflict (id) do nothing;
+
+-- ═══════════════ packages/db/0009_topics_seed.sql ═══════════════
+-- МышМат — миграция 0009: сид тем олимпиадного маршрута.
+-- ВАЖНО: topic_progress ссылается на olympiad_topics по FK — без этих строк
+-- прогресс не сохранялся бы. Плюс новая тема «Подсчёт фигур».
+
+insert into olympiad_topics (id, title, description, glyph, color, depends_on, ord, has_algebra) values
+  ('heads-legs', 'Головы и ноги', 'Приручи задачи про зайцев, змей и загадочные ноги!', '🐰', 'blue', '[]'::jsonb, 1, true),
+  ('counting-figures', 'Подсчёт фигур', 'Сколько треугольников на рисунке? Больше, чем кажется!', '△', 'pink', '[]'::jsonb, 2, false),
+  ('parity', 'Чётность', 'Чёт и нечет — волшебный ключ ко многим задачам.', '⚖️', 'purple', '[]'::jsonb, 3, false),
+  ('logic', 'Логика', 'Рыцари, лжецы и хитрые рассуждения.', '🧩', 'green', '["parity"]'::jsonb, 4, false),
+  ('dirichlet', 'Принцип Дирихле', 'Если кроликов больше, чем клеток…', '🕊️', 'orange', '["heads-legs","parity"]'::jsonb, 5, false)
+on conflict (id) do update set
+  title = excluded.title,
+  description = excluded.description,
+  glyph = excluded.glyph,
+  color = excluded.color,
+  depends_on = excluded.depends_on,
+  ord = excluded.ord,
+  has_algebra = excluded.has_algebra;
 

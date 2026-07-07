@@ -35,6 +35,7 @@ function sanitize(p: OlympiadProblem) {
     title: p.title,
     statement: p.statement,
     imageUrl: p.imageUrl,
+    figure: p.figure,
     actionsCount: p.actionsCount,
     hintsTotal: p.hints.length,
     rewardStars: p.rewardStars,

@@ -4,7 +4,7 @@
   padding: clamp(14px, 3vw, 30px);
   background-image:
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(61, 156, 64, 0.1)),
-    url("/myshmat-assets/background.png");
+    url("/myshmat-assets/background.webp");
   background-size: cover;
   background-position: center bottom;
 }
@@ -92,7 +92,7 @@
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background-image: url("/myshmat-assets/avatar.png");
+  background-image: url("/myshmat-assets/avatar.webp");
   background-size: cover;
   background-position: center;
   border: 4px solid #e3f0ff;
@@ -335,4 +335,14 @@
 .rw-hint-btn:hover {
   background: #ffe8c2;
   transform: translateY(-1px);
+}
+
+/* векторные значки: без старого круга */
+.badge .badge-art {
+  display: grid;
+  place-items: center;
+  min-block-size: 66px;
+}
+.badge.off .badge-art {
+  opacity: 0.85;
 }

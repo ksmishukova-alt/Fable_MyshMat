@@ -107,6 +107,13 @@ export interface SupportConfig {
   findError?: { lines: string[]; wrongLine: number; acceptedFixes: string[] };
 }
 
+/** Рисунок к задаче «Подсчёт фигур» (рендерится components/FigureArt.tsx). */
+export type FigureSpec =
+  | { kind: "segments"; points: number }        // точки на прямой
+  | { kind: "fan"; parts: number }              // треугольник-«веер»: чевианы из вершины
+  | { kind: "grid"; size: number }              // квадратная сетка n×n клеток
+  | { kind: "rect-grid"; rows: number; cols: number }; // прямоугольная сетка
+
 export interface OlympiadProblem {
   id: string;
   topicId: string;
@@ -115,6 +122,8 @@ export interface OlympiadProblem {
   title: string;
   statement: string;
   imageUrl?: string;
+  /** Векторный рисунок (подсчёт фигур). */
+  figure?: FigureSpec;
   /** Число действий (опора на L2). */
   actionsCount?: number;
   /** Эталонный ответ + допустимые формы. */

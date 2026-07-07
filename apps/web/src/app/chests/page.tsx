@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ChestState, ChestPrize } from "@/types/rewards";
 import { prizeGlyph } from "@/lib/chest";
+import { stickerById } from "@/lib/stickers-catalog";
+import { StickerArt } from "@/components/StickerArt";
 import "./chests.css";
 
 const CONFETTI_COLORS = ["#FFB33A", "#4A8DFF", "#8B5CF6", "#42C263", "#F45D9E", "#FFD342"];
@@ -70,7 +72,7 @@ export default function ChestsPage() {
           {ready && <span className="chest-glow" aria-hidden="true" />}
           <img
             className="chest-img"
-            src="/myshmat-assets/chest-large.png"
+            src="/myshmat-assets/chest-large.webp"
             alt="Сундук"
             onClick={open}
             role={ready ? "button" : undefined}
@@ -83,7 +85,13 @@ export default function ChestsPage() {
 
         {prize && (
           <div className="prize-pop" role="status">
-            <span className="prize-glyph">{prizeGlyph(prize)}</span>
+            <span className="prize-glyph">
+              {prize.kind === "sticker" && prize.stickerId ? (
+                <StickerArt art={stickerById(prize.stickerId)?.art ?? ""} size={84} />
+              ) : (
+                prizeGlyph(prize)
+              )}
+            </span>
             <div className="prize-label">{prize.label}</div>
           </div>
         )}

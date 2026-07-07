@@ -1,6 +1,6 @@
 .subject-stage{
   inline-size:100dvw;min-block-size:100dvh;
-  background-image:linear-gradient(180deg,rgba(143,208,255,.10),rgba(154,212,114,.06)),url('/myshmat-assets/background.png');
+  background-image:linear-gradient(180deg,rgba(143,208,255,.10),rgba(154,212,114,.06)),url('/myshmat-assets/background.webp');
   background-size:cover;background-position:center;
   padding:clamp(16px,3vw,40px);
   display:flex;justify-content:center;

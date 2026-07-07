@@ -340,19 +340,19 @@ export function getReviewQueue(): ReviewItem[] {
     {
       attemptId: "att-1", childId: "child-artem", childName: "Артём",
       taskId: "t-m-2", taskTitle: "Задача про конфеты", subjectId: "math",
-      solutionUrl: "/myshmat-assets/revisions.png",
+      solutionUrl: "/myshmat-assets/revisions.webp",
       submittedAt: "2026-06-16T08:30:00Z",
     },
     {
       attemptId: "att-2", childId: "child-artem", childName: "Артём",
       taskId: "t-r-1", taskTitle: "Безударные гласные", subjectId: "russian",
-      solutionUrl: "/myshmat-assets/revisions.png",
+      solutionUrl: "/myshmat-assets/revisions.webp",
       submittedAt: "2026-06-16T08:32:00Z",
     },
     {
       attemptId: "att-3", childId: "child-masha", childName: "Маша",
       taskId: "t-m-2", taskTitle: "Задача про конфеты", subjectId: "math",
-      solutionUrl: "/myshmat-assets/revisions.png",
+      solutionUrl: "/myshmat-assets/revisions.webp",
       submittedAt: "2026-06-16T09:05:00Z",
     },
   ];

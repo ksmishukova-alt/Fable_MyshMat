@@ -3,6 +3,7 @@ import { getCurrentChildId } from "@/lib/session";
 import { getSupabase } from "@/lib/supabase";
 import { mockOwnedStickers } from "@/lib/chest";
 import { STICKER_CATALOG } from "@/lib/stickers-catalog";
+import { StickerArt } from "@/components/StickerArt";
 import "./stickers.css";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +68,7 @@ export default async function StickersPage() {
                       )}
                       <div>
                         <span className="glyph" aria-hidden="true">
-                          {s.glyph}
+                          <StickerArt art={s.art} size={44} />
                         </span>
                         <b>{has ? s.title : "?"}</b>
                       </div>

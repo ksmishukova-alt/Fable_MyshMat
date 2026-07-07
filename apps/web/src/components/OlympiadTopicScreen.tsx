@@ -9,7 +9,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { OLYMPIAD_MAX_ATTEMPTS, LEVEL_INFO, type OlympiadLevel } from "@/types/olympiad";
+import { OLYMPIAD_MAX_ATTEMPTS, LEVEL_INFO, type OlympiadLevel, type FigureSpec } from "@/types/olympiad";
+import { FigureArt } from "@/components/FigureArt";
 
 interface SanStep {
   id: string;
@@ -24,6 +25,7 @@ interface SanProblem {
   title: string;
   statement: string;
   imageUrl?: string;
+  figure?: FigureSpec;
   actionsCount?: number;
   hintsTotal: number;
   rewardStars: number;
@@ -244,6 +246,11 @@ export function OlympiadTopicScreen({
         </span>
       </div>
       <div className="oly-statement">{problem.statement}</div>
+      {problem.figure && (
+        <div className="oly-figure">
+          <FigureArt figure={problem.figure} />
+        </div>
+      )}
 
       <div className="oly-mascot-row">
         <div className="oly-mascot" aria-hidden="true" />

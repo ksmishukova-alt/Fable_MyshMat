@@ -6,7 +6,7 @@
   padding: clamp(16px, 4vw, 40px);
   background-image:
     linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(61, 156, 64, 0.08)),
-    url("/myshmat-assets/background.png");
+    url("/myshmat-assets/background.webp");
   background-size: cover;
   background-position: center bottom;
 }
@@ -43,7 +43,7 @@
   inline-size: clamp(84px, 18vw, 120px);
   block-size: clamp(84px, 18vw, 120px);
   margin: 10px auto 4px;
-  background-image: url("/myshmat-assets/avatar.png");
+  background-image: url("/myshmat-assets/avatar.webp");
   background-size: cover;
   background-position: center;
   border-radius: 50%;

@@ -63,7 +63,7 @@ export function SideCards({
           Исправить <span>▶</span>
         </Link>
         <div className="side-num">{revisions.count}</div>
-        <img className="block-art" src="/myshmat-assets/revisions.png" alt="" aria-hidden="true" />
+        <img className="block-art" src="/myshmat-assets/revisions.webp" alt="" aria-hidden="true" />
       </article>
 
       {/* Коллекция наклеек — всегда доступна */}
@@ -81,7 +81,7 @@ export function SideCards({
         <Link className="btn-album btn-cta btn-cta--orange" href="/stickers">
           Открыть альбом <span>›</span>
         </Link>
-        <img className="block-art" src="/myshmat-assets/stickers.png" alt="" aria-hidden="true" />
+        <img className="block-art" src="/myshmat-assets/stickers.webp" alt="" aria-hidden="true" />
       </article>
     </>
   );

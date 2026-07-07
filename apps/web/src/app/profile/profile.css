@@ -1,0 +1,155 @@
+/* Личный кабинет ребёнка. */
+.pf-stage {
+  min-height: 100dvh;
+  padding: clamp(14px, 3vw, 30px);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(61, 156, 64, 0.1)),
+    url("/myshmat-assets/background.webp");
+  background-size: cover;
+  background-position: center bottom;
+}
+.pf-wrap {
+  max-inline-size: 860px;
+  margin: 0 auto;
+}
+.pf-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: clamp(12px, 2.4vw, 22px);
+}
+.pf-back {
+  min-inline-size: var(--touch);
+  min-block-size: var(--touch);
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #35436f;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--sh-soft);
+  transition: transform var(--t-fast);
+}
+.pf-back:hover {
+  transform: translateX(-2px);
+}
+.pf-title {
+  font-size: clamp(24px, 5vw, 34px);
+  font-weight: 900;
+  color: var(--ink-strong);
+}
+.pf-hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: clamp(16px, 3vw, 28px);
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  box-shadow: var(--sh-card);
+  padding: clamp(16px, 3vw, 26px);
+  animation: rise-in var(--t-screen) both;
+}
+.pf-name {
+  font-size: clamp(22px, 4.6vw, 32px);
+  font-weight: 900;
+  color: var(--ink-strong);
+}
+.pf-grade {
+  margin-top: 2px;
+  font-weight: 700;
+  color: #5a6a8c;
+}
+.pf-stat-row {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-weight: 900;
+  font-size: 14.5px;
+}
+.pf-chip.stars { background: #fff1d9; color: #b8560a; }
+.pf-chip.badges { background: #e8f2ff; color: #1667e0; }
+.pf-chip.stickers { background: #f1e9ff; color: #6d2ee5; }
+.pf-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  box-shadow: var(--sh-card);
+  padding: clamp(16px, 2.6vw, 24px);
+  margin-top: 14px;
+  animation: rise-in var(--t-screen) both;
+}
+.pf-card:nth-of-type(2) { animation-delay: 0.08s; }
+.pf-card:nth-of-type(3) { animation-delay: 0.16s; }
+.pf-card h2 {
+  font-size: clamp(16px, 3.2vw, 20px);
+  font-weight: 900;
+  color: var(--ink-strong);
+  margin-bottom: 10px;
+}
+.pf-topics {
+  display: grid;
+  gap: 10px;
+}
+.pf-topic {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  background: #f8fbff;
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.pf-topic b {
+  font-size: 14.5px;
+  color: var(--ink-strong);
+}
+.pf-topic .bar {
+  block-size: 8px;
+  border-radius: 999px;
+  background: #e6edf7;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.pf-topic .bar i {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #45bd60, #5dcc5d);
+}
+.pf-topic .lvl {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #5a6a8c;
+  white-space: nowrap;
+}
+.pf-badge-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pf-badge-item {
+  text-align: center;
+  inline-size: 84px;
+}
+.pf-badge-item b {
+  display: block;
+  font-size: 11.5px;
+  color: #44557e;
+  margin-top: 4px;
+}
+.pf-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}

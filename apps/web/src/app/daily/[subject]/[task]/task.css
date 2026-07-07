@@ -1,6 +1,6 @@
 .task-stage{
   inline-size:100dvw;min-block-size:100dvh;
-  background-image:linear-gradient(180deg,rgba(143,208,255,.10),rgba(154,212,114,.06)),url('/myshmat-assets/background.png');
+  background-image:linear-gradient(180deg,rgba(143,208,255,.10),rgba(154,212,114,.06)),url('/myshmat-assets/background.webp');
   background-size:cover;background-position:center;
   padding:clamp(16px,3vw,40px);display:flex;justify-content:center;align-items:flex-start;
 }
@@ -99,7 +99,7 @@
 .ts-helper{display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1vw,14px)}
 .ts-mascot{
   inline-size:100%;aspect-ratio:1;max-inline-size:200px;
-  background-image:url('/myshmat-assets/mascot-cutout.png');
+  background-image:url('/myshmat-assets/mascot-cutout.webp');
   background-size:contain;background-repeat:no-repeat;background-position:center;
   filter:drop-shadow(0 8px 16px rgba(80,110,180,.22));
 }

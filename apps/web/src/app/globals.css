@@ -4,8 +4,6 @@
    Правила: без !important, дизайн-токены, container queries,
    тач-цели ≥44px, prefers-reduced-motion.
    ============================================================ */
-@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap");
-
 @layer tokens, base, layout, components, screens, motion;
 
 /* ───────────────────────── tokens ───────────────────────── */
@@ -53,7 +51,7 @@
     --sh-cta-orange: 0 0.8cqh 1.5cqh rgba(255, 122, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.42);
 
     /* типографика */
-    --font-ui: "Nunito", system-ui, sans-serif;
+    --font-ui: var(--font-nunito, "Nunito"), system-ui, sans-serif;
 
     /* радиусы */
     --r-card: clamp(12px, 1.45cqw, 26px);
@@ -125,7 +123,7 @@
     container-type: size;
     background-image:
       linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02) 46%, rgba(61, 156, 64, 0.07)),
-      url("/myshmat-assets/background.png");
+      url("/myshmat-assets/background.webp");
     background-size: cover;
     background-position: center bottom;
   }
@@ -335,7 +333,7 @@
     inline-size: clamp(34px, 3.3cqw, 58px);
     block-size: clamp(34px, 3.3cqw, 58px);
     border-radius: 50%;
-    background-image: url("/myshmat-assets/avatar.png");
+    background-image: url("/myshmat-assets/avatar.webp");
     background-size: cover;
     background-position: center;
     background-color: #fff;
@@ -396,7 +394,7 @@
     align-self: end;
     inline-size: 100%;
     block-size: 88%;
-    background-image: url("/myshmat-assets/mascot-cutout.png");
+    background-image: url("/myshmat-assets/mascot-cutout.webp");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center bottom;
@@ -1015,7 +1013,7 @@
   .route-card.route-map {
     background-image:
       linear-gradient(180deg, rgba(255, 255, 255, 0.44), rgba(255, 255, 255, 0.08) 34%, rgba(255, 255, 255, 0) 78%),
-      url("/myshmat-assets/route-map.png");
+      url("/myshmat-assets/route-map.webp");
     background-size: 100% 100%;
     background-position: center center;
     background-repeat: no-repeat;
@@ -1267,5 +1265,18 @@
     font-weight: 600;
     color: #5a6a8c;
     font-size: clamp(12px, 1.4cqw, 17px);
+  }
+}
+
+/* профиль-карточка теперь ссылка */
+@layer screens {
+  a.profile {
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--t-fast), box-shadow var(--t-fast);
+  }
+  a.profile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(27, 72, 124, 0.18);
   }
 }

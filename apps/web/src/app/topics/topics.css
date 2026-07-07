@@ -4,7 +4,7 @@
   padding: clamp(16px, 3vw, 32px);
   background-image:
     linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(61, 156, 64, 0.1)),
-    url("/myshmat-assets/background.png");
+    url("/myshmat-assets/background.webp");
   background-size: cover;
   background-position: center bottom;
 }

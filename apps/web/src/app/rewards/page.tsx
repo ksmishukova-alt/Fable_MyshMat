@@ -6,26 +6,19 @@
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MascotView } from "@/components/MascotView";
+import { MascotView, ItemArt } from "@/components/MascotView";
+import { BadgeArt } from "@/components/BadgeArt";
 import type { MascotState, ShopItem } from "@/types/rewards";
 import "./rewards.css";
 
 interface RewardsData {
   stars: number;
   mascot: MascotState;
-  badges: { topicId: string; title: string; glyph: string; earned: boolean }[];
+  badges: { topicId: string; title: string; glyph: string; color: string; earned: boolean }[];
   shop: ShopItem[];
   riddle: { question: string; hint: string; rewardStars: number; solved: boolean };
 }
 
-const ITEM_GLYPHS: Record<string, string> = {
-  "cap-blue": "🧢",
-  "scarf-orange": "🧣",
-  glasses: "👓",
-  crown: "👑",
-  "cape-purple": "🦸",
-  flag: "🚩",
-};
 
 export default function RewardsPage() {
   const [data, setData] = useState<RewardsData | null>(null);
@@ -126,7 +119,7 @@ export default function RewardsPage() {
                 return (
                   <div className="shop-item" key={item.id}>
                     <span className="glyph" aria-hidden="true">
-                      {ITEM_GLYPHS[item.art] ?? "🎁"}
+                      <ItemArt art={item.art} size={42} />
                     </span>
                     <b>{item.title}</b>
                     <span className="desc">{item.description}</span>
@@ -161,8 +154,8 @@ export default function RewardsPage() {
             <div className="badge-grid">
               {data.badges.map((b) => (
                 <div className={`badge${b.earned ? "" : " off"}`} key={b.topicId}>
-                  <span className="glyph" aria-hidden="true">
-                    {b.glyph}
+                  <span className="badge-art" aria-hidden="true">
+                    <BadgeArt topicId={b.topicId} color={b.color} earned={b.earned} size={56} />
                   </span>
                   <b>{b.title}</b>
                 </div>
