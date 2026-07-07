@@ -1,0 +1,13 @@
+{
+  "name": "myshmat",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @myshmat/web",
+    "build": "npm run build --workspace @myshmat/web",
+    "start": "npm run start --workspace @myshmat/web"
+  }
+}

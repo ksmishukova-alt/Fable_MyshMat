@@ -1,0 +1,235 @@
+/* Дуэли: выбор игры, раунд на время, лидерборд. */
+.du-stage {
+  min-height: 100dvh;
+  padding: clamp(14px, 3vw, 30px);
+  background-image:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(61, 156, 64, 0.1)),
+    url("/myshmat-assets/background.png");
+  background-size: cover;
+  background-position: center bottom;
+}
+.du-wrap {
+  max-inline-size: 760px;
+  margin: 0 auto;
+}
+.du-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: clamp(12px, 2.4vw, 22px);
+}
+.du-back {
+  min-inline-size: var(--touch);
+  min-block-size: var(--touch);
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #35436f;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: var(--sh-soft);
+  transition: transform var(--t-fast);
+}
+.du-back:hover {
+  transform: translateX(-2px);
+}
+.du-title {
+  font-size: clamp(24px, 5vw, 34px);
+  font-weight: 900;
+  color: var(--ink-strong);
+}
+.du-sub {
+  color: #44557e;
+  font-weight: 600;
+  font-size: clamp(12px, 2.6vw, 15px);
+}
+.du-games {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+.du-game {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--stroke);
+  border-radius: 22px;
+  box-shadow: var(--sh-card);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 4px solid transparent;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+  animation: rise-in var(--t-screen) both;
+  font: inherit;
+}
+.du-games .du-game:nth-child(2) { animation-delay: 0.08s; }
+.du-games .du-game:nth-child(3) { animation-delay: 0.16s; }
+.du-game:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(27, 72, 124, 0.18);
+}
+.du-game .glyph {
+  font-size: 44px;
+  display: block;
+  animation: sparkle-spin 3s ease-in-out infinite;
+}
+.du-game b {
+  display: block;
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--ink-strong);
+}
+.du-game p {
+  margin-top: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a6a8c;
+}
+/* раунд */
+.du-round {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  box-shadow: var(--sh-card);
+  padding: clamp(18px, 3.4vw, 30px);
+  text-align: center;
+  animation: rise-in 0.3s ease both;
+}
+.du-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.du-timer {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--ink-strong);
+  background: #e8f2ff;
+  border-radius: 999px;
+  padding: 8px 20px;
+  min-inline-size: 96px;
+}
+.du-timer.low {
+  background: #ffeef0;
+  color: #c2314f;
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+@keyframes timer-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+.du-score {
+  font-size: 18px;
+  font-weight: 900;
+  color: #b8560a;
+}
+.du-question {
+  font-size: clamp(26px, 7vw, 44px);
+  font-weight: 900;
+  color: var(--ink-strong);
+  min-block-size: 70px;
+  display: grid;
+  place-items: center;
+  animation: bubble-pop 0.2s ease both;
+}
+.du-options {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+.du-option {
+  border: 2px solid #dbe5f1;
+  border-radius: 16px;
+  background: #fff;
+  min-height: clamp(54px, 9vw, 68px);
+  font: inherit;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 900;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+.du-option:hover {
+  border-color: #9cc4ff;
+  transform: translateY(-2px);
+}
+.du-option.flash-good {
+  border-color: #2fad50;
+  background: #e6f5e9;
+}
+.du-option.flash-bad {
+  border-color: #ef5b6e;
+  background: #ffeef0;
+  animation: shake 0.3s ease;
+}
+.du-streak {
+  margin-top: 12px;
+  font-weight: 800;
+  color: #b8560a;
+  min-block-size: 22px;
+  font-size: 14px;
+}
+/* результат + лидерборд */
+.du-result-glyph {
+  font-size: 56px;
+  display: block;
+  animation: prize-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.du-result-score {
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--ink-strong);
+  margin-top: 6px;
+}
+.du-result-note {
+  font-weight: 700;
+  color: #5a6a8c;
+  margin-top: 4px;
+}
+.du-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.du-board {
+  margin-top: 18px;
+  text-align: left;
+}
+.du-board h3 {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--ink-strong);
+  margin-bottom: 8px;
+}
+.du-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #24335e;
+  font-size: 14.5px;
+}
+.du-row:nth-child(even) {
+  background: #f6f9ff;
+}
+.du-row .rank {
+  inline-size: 30px;
+  font-weight: 900;
+  color: #7a89a5;
+}
+.du-row:nth-child(1) .rank { color: #e0a000; }
+.du-row:nth-child(2) .rank { color: #8d9db5; }
+.du-row:nth-child(3) .rank { color: #b46a2a; }
+.du-row .pts {
+  margin-left: auto;
+  font-weight: 900;
+  color: #1667e0;
+}
