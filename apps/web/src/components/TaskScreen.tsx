@@ -90,19 +90,20 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           : st.input.trim().toLowerCase() === step.correctInput.trim().toLowerCase();
 
     const attempts = st.attempts + 1;
-    let phase: StepPhase;
-    if (ok) phase = "correct";
-    else if (attempts >= MAX_ATTEMPTS) phase = "failed";
-    else phase = "wrong";
-    patch({
-      attempts, phase,
-      hintUsed: !ok && attempts >= 1 ? true : st.hintUsed, // подсказка появляется после ошибки
-      solvedFirstTry: ok && attempts === 1 && !st.hintUsed ? true : st.solvedFirstTry,
-    });
-  }
-
-  function retry() {
-    patch({ phase: "solving" }); // попытки сохраняются, ребёнок пробует снова
+    if (ok) {
+      patch({
+        attempts,
+        phase: "correct",
+        solvedFirstTry: attempts === 1 && !st.hintUsed ? true : st.solvedFirstTry,
+      });
+      // одна кнопка «Завершить»: верно → короткий флеш и сразу дальше
+      window.setTimeout(() => goNext(), 900);
+    } else if (attempts >= MAX_ATTEMPTS) {
+      patch({ attempts, phase: "failed", hintUsed: true });
+    } else {
+      // остаёмся на месте: попытка сгорела, подсказка открылась
+      patch({ attempts, phase: "solving", hintUsed: true });
+    }
   }
 
   function buildReport() {
@@ -214,10 +215,13 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {st.phase === "correct" && !isManual && (
             <div className="ts-result ok"><b>Верно! 🎉</b><span>+{stars} ⭐ {st.hintUsed && "(с подсказкой)"}</span></div>
           )}
-          {st.phase === "wrong" && (
+          {st.phase === "solving" && st.attempts > 0 && (
             <div className="ts-result no">
               <b>Попробуй ещё раз 💪</b>
-              <span>Попытка {st.attempts} из {MAX_ATTEMPTS}. {step.hint ? "Загляни в подсказку ниже." : ""}</span>
+              <span>
+                Попытка {st.attempts} из {MAX_ATTEMPTS}.{" "}
+                {step.hint ? "Подсказка уже открылась выше!" : "Подумай ещё чуть-чуть."}
+              </span>
             </div>
           )}
           {st.phase === "failed" && (
@@ -231,14 +235,13 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {!isReading && !isManual && (
             <div className="ts-actions">
               {st.phase === "solving" && (
-                <button className="ts-cta" onClick={check}>Проверить</button>
+                <button className="ts-cta" onClick={check}>
+                  Завершить ✓
+                </button>
               )}
-              {st.phase === "wrong" && (
-                <button className="ts-cta" onClick={retry}>Повторить</button>
-              )}
-              {resolved && (
+              {st.phase === "failed" && (
                 <button className="ts-cta" onClick={goNext}>
-                  {isLast ? (nextTaskId ? "Следующая задача →" : "Завершить") : "Следующее упражнение →"}
+                  {isLast ? (nextTaskId ? "Следующая задача →" : "К предметам →") : "Дальше →"}
                 </button>
               )}
             </div>

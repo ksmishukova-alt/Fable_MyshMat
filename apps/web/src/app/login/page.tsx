@@ -111,7 +111,7 @@ function LoginInner() {
                 id="child-login"
                 value={login}
                 onChange={(e) => setLogin(e.target.value)}
-                placeholder="например, artem"
+                placeholder="например, артём"
                 autoComplete="username"
                 autoCapitalize="none"
               />
@@ -202,7 +202,7 @@ function LoginInner() {
           {error}
         </div>
         <div className="login-hint">
-          Демо: ученик <b>artem</b> / PIN <b>1234</b> · методист <b>metodist@myshmat.ru</b> /{" "}
+          Демо: ученик <b>артём</b> / PIN <b>1234</b> · методист <b>metodist@myshmat.ru</b> /{" "}
           <b>demo1234</b>
         </div>
       </div>

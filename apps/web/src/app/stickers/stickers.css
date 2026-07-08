@@ -235,7 +235,7 @@
   from { opacity: 0; transform: translateY(10px) scale(0.92); }
   to { opacity: 1; transform: none; }
 }
-.slot:hover { transform: scale(1.05) rotate(-1.5deg); }
+.slot:hover { transform: translateY(-2px); }
 .slot b {
   font-size: 11px;
   color: #6e5a3a;
@@ -335,7 +335,7 @@
   box-shadow: var(--sh-cta-blue);
   transition: transform var(--t-fast);
 }
-.book-arrow:hover:not(:disabled) { transform: scale(1.08); }
+.book-arrow:hover:not(:disabled) { transform: translateY(-2px); }
 .book-arrow:disabled { background: #dfe6f0; color: #9aa5b7; box-shadow: none; cursor: not-allowed; }
 .book-dots { display: flex; gap: 8px; }
 .book-dot {

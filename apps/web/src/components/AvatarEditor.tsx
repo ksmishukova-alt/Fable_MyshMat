@@ -1,52 +1,54 @@
 "use client";
 
 /**
- * Конструктор аватара «как я»: мальчик/девочка, тон кожи, причёска,
- * цвет волос, одежда, аксессуар + готовые образы. Живой предпросмотр.
+ * Выбор аватара (DiceBear): стиль → сетка вариантов → фон → сохранить.
+ * «Перемешать» генерирует новую порцию вариантов.
  */
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  SKIN_TONES,
-  HAIR_COLORS,
-  HAIR_STYLES,
-  OUTFIT_COLORS,
-  ACCESSORIES,
-  AVATAR_PRESETS,
-  type AvatarConfig,
-  type AvatarKind,
-} from "@/lib/avatar";
+import { AVATAR_STYLES, AVATAR_BGS, type AvatarConfig } from "@/lib/avatar";
 import { AvatarView } from "@/components/AvatarView";
+
+const VARIANTS = 12;
+
+function makeSeeds(nonce: number): string[] {
+  return Array.from({ length: VARIANTS }, (_, i) => `mysh-${nonce}-${i}`);
+}
 
 export function AvatarEditor({ initial }: { initial: AvatarConfig }) {
   const router = useRouter();
   const [config, setConfig] = useState<AvatarConfig>(initial);
+  const [nonce, setNonce] = useState(1);
   const [saved, setSaved] = useState<"idle" | "saving" | "done">("idle");
+  const [warn, setWarn] = useState<string | null>(null);
+
+  const seeds = makeSeeds(nonce);
+  const gridSeeds = seeds.includes(config.seed)
+    ? seeds
+    : [config.seed, ...seeds.slice(0, VARIANTS - 1)];
 
   async function save() {
     setSaved("saving");
+    setWarn(null);
     const res = await fetch("/api/profile/avatar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(config),
     });
-    setSaved(res.ok ? "done" : "idle");
-    if (res.ok) {
-      setTimeout(() => setSaved("idle"), 1500);
-      router.refresh();
-    }
-  }
-
-  function set(patch: Partial<AvatarConfig>) {
-    setConfig((c) => {
-      const next = { ...c, ...patch };
-      // при смене мальчик/девочка причёска переключается на первую доступную
-      if (patch.kind && !HAIR_STYLES[next.kind][next.style]) {
-        next.style = Object.keys(HAIR_STYLES[next.kind])[0];
+    const d = (await res.json()) as { ok: boolean; persistent?: boolean };
+    if (res.ok && d.ok) {
+      setSaved("done");
+      if (d.persistent === false) {
+        setWarn(
+          "Внимание: база данных не подключена (env-переменные на Vercel) — выбор сбросится после перезапуска сервера.",
+        );
       }
-      return next;
-    });
-    setSaved("idle");
+      setTimeout(() => setSaved("idle"), 1600);
+      router.refresh();
+    } else {
+      setSaved("idle");
+      setWarn("Не получилось сохранить, попробуй ещё раз.");
+    }
   }
 
   return (
@@ -62,119 +64,55 @@ export function AvatarEditor({ initial }: { initial: AvatarConfig }) {
         >
           {saved === "saving" ? "Сохраняем…" : saved === "done" ? "✓ Сохранено!" : "Сохранить"}
         </button>
+        {warn && <p className="av-warn">{warn}</p>}
       </div>
 
       <div className="av-controls">
         <div className="av-group">
-          <b>Кто ты?</b>
+          <b>Стиль</b>
           <div className="av-row">
-            {(["boy", "girl"] as AvatarKind[]).map((k) => (
-              <button
-                key={k}
-                className={`av-acc${config.kind === k ? " on" : ""}`}
-                onClick={() => set({ kind: k })}
-              >
-                {k === "boy" ? "Мальчик" : "Девочка"}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="av-group">
-          <b>Тон кожи</b>
-          <div className="av-row">
-            {Object.entries(SKIN_TONES).map(([id, c]) => (
-              <button
-                key={id}
-                className={`av-swatch${config.skin === id ? " on" : ""}`}
-                style={{ background: c.main }}
-                title={c.label}
-                aria-label={`Тон кожи: ${c.label}`}
-                onClick={() => set({ skin: id })}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="av-group">
-          <b>Причёска</b>
-          <div className="av-row">
-            {Object.entries(HAIR_STYLES[config.kind]).map(([id, label]) => (
+            {Object.entries(AVATAR_STYLES).map(([id, label]) => (
               <button
                 key={id}
                 className={`av-acc${config.style === id ? " on" : ""}`}
-                title={label}
-                onClick={() => set({ style: id })}
+                onClick={() => setConfig((c) => ({ ...c, style: id }))}
               >
-                <AvatarView config={{ ...config, style: id, acc: "none" }} size={34} />
+                {label}
               </button>
             ))}
           </div>
         </div>
 
         <div className="av-group">
-          <b>Цвет волос</b>
+          <b>Выбери себя</b>
           <div className="av-row">
-            {Object.entries(HAIR_COLORS).map(([id, c]) => (
+            {gridSeeds.map((seed) => (
               <button
-                key={id}
-                className={`av-swatch${config.hair === id ? " on" : ""}`}
-                style={{ background: c.main }}
-                title={c.label}
-                aria-label={`Волосы: ${c.label}`}
-                onClick={() => set({ hair: id })}
+                key={seed}
+                className={`av-preset${config.seed === seed ? " on" : ""}`}
+                aria-label="Вариант аватара"
+                onClick={() => setConfig((c) => ({ ...c, seed }))}
+              >
+                <AvatarView config={{ ...config, seed }} size={52} />
+              </button>
+            ))}
+          </div>
+          <button className="av-shuffle" onClick={() => setNonce((n) => n + 1)}>
+            🎲 Перемешать варианты
+          </button>
+        </div>
+
+        <div className="av-group">
+          <b>Фон</b>
+          <div className="av-row">
+            {AVATAR_BGS.map((bg) => (
+              <button
+                key={bg}
+                className={`av-swatch${config.bg === bg ? " on" : ""}`}
+                style={{ background: `#${bg}` }}
+                aria-label={`Фон #${bg}`}
+                onClick={() => setConfig((c) => ({ ...c, bg }))}
               />
-            ))}
-          </div>
-        </div>
-
-        <div className="av-group">
-          <b>Одежда</b>
-          <div className="av-row">
-            {Object.entries(OUTFIT_COLORS).map(([id, c]) => (
-              <button
-                key={id}
-                className={`av-swatch${config.outfit === id ? " on" : ""}`}
-                style={{ background: c.main }}
-                title={c.label}
-                aria-label={`Одежда: ${c.label}`}
-                onClick={() => set({ outfit: id })}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div className="av-group">
-          <b>Аксессуар</b>
-          <div className="av-row">
-            {Object.entries(ACCESSORIES).map(([id, label]) => (
-              <button
-                key={id}
-                className={`av-acc${config.acc === id ? " on" : ""}`}
-                title={label}
-                onClick={() => set({ acc: id })}
-              >
-                {id === "none" ? label : <AvatarView config={{ ...config, acc: id }} size={34} />}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="av-group">
-          <b>Готовые образы</b>
-          <div className="av-row">
-            {AVATAR_PRESETS.map((p) => (
-              <button
-                key={p.label}
-                className="av-preset"
-                title={p.label}
-                onClick={() => {
-                  setConfig(p.config);
-                  setSaved("idle");
-                }}
-              >
-                <AvatarView config={p.config} size={46} />
-              </button>
             ))}
           </div>
         </div>

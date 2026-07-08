@@ -19,6 +19,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad json" }, { status: 400 });
   }
   const config = parseAvatar(JSON.stringify(body));
-  const ok = await saveAvatar(s.userId, config);
-  return NextResponse.json({ ok, config }, { status: ok ? 200 : 500 });
+  const result = await saveAvatar(s.userId, config);
+  return NextResponse.json({ ...result, config }, { status: result.ok ? 200 : 500 });
 }

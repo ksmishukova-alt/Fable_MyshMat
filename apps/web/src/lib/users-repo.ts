@@ -12,10 +12,15 @@ export interface AuthedUser {
   name: string;
 }
 
-/** Демо-аккаунты (работают без БД). */
+/** Нормализация логина: регистр, пробелы, ё→е (вход — кириллицей). */
+export function normalizeLogin(raw: string): string {
+  return raw.trim().toLowerCase().replace(/ё/g, "е");
+}
+
+/** Демо-аккаунты (работают без БД). Латиница оставлена как псевдоним. */
 const DEMO_CHILDREN = [
-  { id: "11111111-1111-1111-1111-111111111111", login: "artem", pin: "1234", name: "Артём", grade: 3 },
-  { id: "22222222-2222-2222-2222-222222222222", login: "masha", pin: "1234", name: "Маша", grade: 2 },
+  { id: "11111111-1111-1111-1111-111111111111", logins: ["артем", "artem"], pin: "1234", name: "Артём", grade: 3 },
+  { id: "22222222-2222-2222-2222-222222222222", logins: ["маша", "masha"], pin: "1234", name: "Маша", grade: 2 },
 ];
 const DEMO_ADULTS: { email: string; password: string; role: Role; id: string; name: string }[] = [
   {
@@ -34,21 +39,22 @@ const DEMO_ADULTS: { email: string; password: string; role: Role; id: string; na
   },
 ];
 
-/** Вход ребёнка: логин + PIN. */
+/** Вход ребёнка: логин (кириллицей или латиницей) + PIN. */
 export async function authChild(login: string, pin: string): Promise<AuthedUser | null> {
+  const norm = normalizeLogin(login);
   const db = getSupabase();
   if (db) {
     const { data } = await db
       .from("child_profiles")
       .select("id, name, login, pin_hash")
-      .eq("login", login.trim().toLowerCase())
+      .eq("login", norm)
       .maybeSingle();
     if (data?.pin_hash && verifySecret(pin, data.pin_hash)) {
       return { role: "child", id: data.id, name: data.name };
     }
     return null;
   }
-  const demo = DEMO_CHILDREN.find((c) => c.login === login.trim().toLowerCase() && c.pin === pin);
+  const demo = DEMO_CHILDREN.find((c) => c.logins.includes(norm) && c.pin === pin);
   return demo ? { role: "child", id: demo.id, name: demo.name } : null;
 }
 

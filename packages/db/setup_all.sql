@@ -1,5 +1,5 @@
 -- МышМат — setup_all.sql: все миграции одним файлом (для Supabase SQL Editor).
--- 0001 init → … → 0009 topics → 0010 daily-by-schedule.
+-- 0001 init → … → 0010 daily-by-schedule → 0011 cyrillic logins.
 
 -- ═══════════════ packages/db/0001_init.sql ═══════════════
 -- МышМат — миграция 0001 (MVP, ТЗ v1 с механикой МышРутки)
@@ -879,4 +879,15 @@ begin
     'myshroutkaGranted', v_granted
   );
 end $$;
+
+-- ═══════════════ packages/db/0011_cyrillic_logins.sql ═══════════════
+-- МышМат — миграция 0011: кириллические логины детей.
+-- Вход нормализуется на сервере: нижний регистр, ё→е.
+-- Демо-логины переводим на кириллицу (е вместо ё — так хранится нормализованная форма).
+
+update child_profiles set login = 'артем'
+ where id = '11111111-1111-1111-1111-111111111111' and (login = 'artem' or login is null);
+
+update child_profiles set login = 'маша'
+ where id = '22222222-2222-2222-2222-222222222222' and (login = 'masha' or login is null);
 

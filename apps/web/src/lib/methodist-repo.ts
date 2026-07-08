@@ -4,6 +4,7 @@
  */
 import { getSupabase } from "@/lib/supabase";
 import { hashSecret } from "@/lib/hash";
+import { normalizeLogin } from "@/lib/users-repo";
 import { TOPICS } from "@/lib/olympiad-bank";
 
 export interface ChildRow {
@@ -93,7 +94,7 @@ export async function createChild(args: {
       id: crypto.randomUUID(),
       name: args.name,
       grade: args.grade,
-      login: args.login.toLowerCase(),
+      login: normalizeLogin(args.login),
       stars: 0,
       disabledSubjects: [],
       scheduledDates: [],
@@ -130,7 +131,7 @@ export async function createChild(args: {
   const { error } = await db.from("child_profiles").insert({
     name: args.name,
     grade: args.grade,
-    login: args.login.trim().toLowerCase(),
+    login: normalizeLogin(args.login),
     pin_hash: hashSecret(args.pin),
     real_parent_id: parentId,
     methodist_id: args.methodistId,

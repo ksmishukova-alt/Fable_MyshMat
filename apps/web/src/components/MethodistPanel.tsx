@@ -48,6 +48,7 @@ export function MethodistPanel({ name }: { name: string }) {
   const [children, setChildren] = useState<ChildRow[]>([]);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [msg, setMsg] = useState<{ text: string; err?: boolean } | null>(null);
+  const [dbMode, setDbMode] = useState<string | null>(null);
 
   const reloadChildren = useCallback(async () => {
     const d = await (await fetch("/api/methodist/children")).json();
@@ -61,6 +62,14 @@ export function MethodistPanel({ name }: { name: string }) {
   useEffect(() => {
     void reloadChildren();
     void reloadQueue();
+    void (async () => {
+      try {
+        const h = (await (await fetch("/api/health")).json()) as { db?: string };
+        setDbMode(h.db ?? null);
+      } catch {
+        setDbMode(null);
+      }
+    })();
   }, [reloadChildren, reloadQueue]);
 
   async function logout() {
@@ -105,6 +114,14 @@ export function MethodistPanel({ name }: { name: string }) {
           ))}
         </div>
 
+        {dbMode === "mock" && (
+          <div className="mt-msg err">
+            ⚠️ База данных не подключена — прогресс, аватары и аккаунты НЕ сохраняются.
+            На Vercel: Settings → Environment Variables → добавь NEXT_PUBLIC_SUPABASE_URL,
+            NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY (значения из apps/web/.env.local)
+            и сделай Redeploy.
+          </div>
+        )}
         {msg && <div className={`mt-msg${msg.err ? " err" : ""}`}>{msg.text}</div>}
 
         {tab === "children" && (
@@ -203,7 +220,7 @@ function ChildrenTab({
             <input
               value={form.login}
               onChange={(e) => setForm({ ...form, login: e.target.value })}
-              placeholder="latinicей"
+              placeholder="можно по-русски: артём"
             />
           </div>
           <div className="mt-field">

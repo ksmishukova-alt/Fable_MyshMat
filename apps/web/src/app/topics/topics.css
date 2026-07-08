@@ -78,7 +78,7 @@
   transform: translateX(clamp(0px, -3vw, -34px));
 }
 a.topic-node:hover {
-  transform: translateY(-3px) scale(1.012);
+  transform: translateY(-3px);
   box-shadow: 0 16px 34px rgba(27, 72, 124, 0.2);
 }
 .topic-glyph {

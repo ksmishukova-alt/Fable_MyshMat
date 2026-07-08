@@ -193,7 +193,7 @@
   transition: transform var(--t-fast), background var(--t-fast);
 }
 .shop-item button:hover {
-  transform: scale(1.03);
+  transform: translateY(-1px);
 }
 .shop-item .buy {
   background: var(--grad-cta-orange);

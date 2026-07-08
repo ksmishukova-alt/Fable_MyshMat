@@ -225,11 +225,10 @@
     gap: clamp(7px, 0.8cqw, 12px);
     line-height: 1;
     transition: transform var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
-    will-change: transform;
   }
   .btn-cta:hover,
   .btn-cta:focus-visible {
-    transform: translateY(-2px) scale(1.035);
+    transform: translateY(-2px);
   }
   .btn-cta > span {
     transition: transform var(--t-fast);
@@ -519,21 +518,6 @@
     transform: translateY(clamp(-2px, -0.22cqh, -1px));
     background: rgba(255, 255, 255, 0.97);
     box-shadow: 0 0.95cqh 2cqh rgba(37, 75, 131, 0.14), inset 0 0 0 2px #1776ff;
-  }
-  .daily .subject:hover::after,
-  .daily .subject:focus-within::after {
-    content: "";
-    position: absolute;
-    right: clamp(-10px, -0.75cqw, -5px);
-    top: clamp(-15px, -1cqw, -8px);
-    width: clamp(18px, 2.2cqw, 30px);
-    height: clamp(26px, 3.2cqw, 42px);
-    border-right: clamp(3px, 0.45cqw, 6px) solid #1681ff;
-    border-top: clamp(3px, 0.45cqw, 6px) solid #1681ff;
-    transform: rotate(18deg);
-    border-radius: 50%;
-    opacity: 0.95;
-    animation: subject-frame 0.22s ease-out both;
   }
   .daily .sub-icon {
     width: clamp(60px, 7.3cqw, 94px);
@@ -1120,7 +1104,7 @@
   .mini-art {
     position: absolute;
     left: auto;
-    z-index: 3;
+    z-index: 1;
     object-fit: contain;
     object-position: center;
     pointer-events: none;
@@ -1143,16 +1127,6 @@
 
 /* ───────────────────────── motion ───────────────────────── */
 @layer motion {
-  @keyframes subject-frame {
-    from {
-      opacity: 0;
-      transform: rotate(18deg) scale(0.74) translateY(3px);
-    }
-    to {
-      opacity: 0.95;
-      transform: rotate(18deg) scale(1) translateY(0);
-    }
-  }
   @keyframes rise-in {
     from {
       opacity: 0;
