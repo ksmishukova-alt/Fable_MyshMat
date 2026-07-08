@@ -1,4 +1,4 @@
-/* Альбом наклеек: серии, редкость, анимация появления. */
+/* Альбом наклеек — журнал с 3D-перелистыванием (Panini-стиль). */
 .st-stage {
   min-height: 100dvh;
   padding: clamp(14px, 3vw, 30px);
@@ -9,7 +9,7 @@
   background-position: center bottom;
 }
 .st-wrap {
-  max-inline-size: 940px;
+  max-inline-size: 820px;
   margin: 0 auto;
 }
 .st-top {
@@ -31,9 +31,7 @@
   box-shadow: var(--sh-soft);
   transition: transform var(--t-fast);
 }
-.st-back:hover {
-  transform: translateX(-2px);
-}
+.st-back:hover { transform: translateX(-2px); }
 .st-title {
   font-size: clamp(24px, 5vw, 34px);
   font-weight: 900;
@@ -49,88 +47,307 @@
   padding: 10px 18px;
   box-shadow: var(--sh-soft);
 }
-.st-series {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid var(--stroke);
-  border-radius: 24px;
-  box-shadow: var(--sh-card);
-  padding: clamp(16px, 2.6vw, 24px);
-  margin-bottom: clamp(12px, 2vw, 18px);
-  animation: rise-in var(--t-screen) both;
+/* книга */
+.book-zone {
+  perspective: 1600px;
 }
-.st-series:nth-child(2) { animation-delay: 0.08s; }
-.st-series:nth-child(3) { animation-delay: 0.16s; }
-.st-series:nth-child(4) { animation-delay: 0.24s; }
-.st-series h2 {
-  font-size: clamp(17px, 3.2vw, 22px);
-  font-weight: 900;
-  color: var(--ink-strong);
-}
-.st-series .progress {
-  margin-top: 8px;
-  inline-size: min(280px, 60%);
-  block-size: 8px;
-  border-radius: 999px;
-  background: #f0e4cf;
+.book {
+  position: relative;
+  border-radius: 18px 22px 22px 18px;
+  background: #fdf9f0;
+  box-shadow:
+    0 18px 40px rgba(27, 72, 124, 0.24),
+    inset 0 0 0 1px rgba(180, 160, 120, 0.25);
+  min-block-size: clamp(420px, 62vh, 560px);
   overflow: hidden;
 }
-.st-series .progress i {
+.book-spine {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  inline-size: 16px;
+  background: linear-gradient(90deg, #b4885a, #8a5a2b 60%, rgba(138, 90, 43, 0));
+  border-radius: 18px 0 0 18px;
+}
+.book-page {
+  position: absolute;
+  inset: 0;
+  padding: clamp(18px, 3.4vw, 32px) clamp(20px, 4vw, 38px) clamp(18px, 3.4vw, 32px) clamp(30px, 5vw, 48px);
+  transform-origin: left center;
+  backface-visibility: hidden;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 30px, rgba(180, 160, 120, 0.06) 30px 31px),
+    #fdf9f0;
+  animation: page-open 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes page-open {
+  from {
+    transform: rotateY(-58deg);
+    box-shadow: 40px 0 60px rgba(27, 72, 124, 0.25);
+    opacity: 0.6;
+  }
+  to {
+    transform: rotateY(0);
+    box-shadow: none;
+    opacity: 1;
+  }
+}
+.book-page.turning-next {
+  animation: page-turn-away 0.42s ease-in both;
+}
+@keyframes page-turn-away {
+  to {
+    transform: rotateY(-80deg);
+    opacity: 0.35;
+  }
+}
+.book-page.turning-prev {
+  animation: page-turn-back 0.42s ease-in both;
+  transform-origin: right center;
+}
+@keyframes page-turn-back {
+  to {
+    transform: rotateY(70deg);
+    opacity: 0.35;
+  }
+}
+/* загнутый уголок */
+.page-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  inline-size: 34px;
+  block-size: 34px;
+  background: linear-gradient(315deg, transparent 50%, rgba(180, 160, 120, 0.35) 50%);
+  border-radius: 0 0 18px 0;
+}
+/* обложка */
+.book-cover {
+  block-size: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+  background: radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.25), transparent 50%),
+    linear-gradient(140deg, #2e77e6, #123a86);
+  margin: calc(clamp(18px, 3.4vw, 32px) * -1) calc(clamp(20px, 4vw, 38px) * -1)
+    calc(clamp(18px, 3.4vw, 32px) * -1) calc(clamp(30px, 5vw, 48px) * -1);
+  padding: 30px;
+}
+.cover-logo {
+  font-size: 30px;
+  font-weight: 900;
+  color: #7fc3ff;
+}
+.cover-logo span { color: #ffc12d; }
+.cover-title {
+  font-size: clamp(30px, 6vw, 44px);
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.18);
+}
+.cover-badge {
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px dashed rgba(255, 255, 255, 0.45);
+  border-radius: 24px;
+  padding: 18px 26px;
+  animation: cover-float 3s ease-in-out infinite;
+}
+@keyframes cover-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+.cover-count {
+  color: #cfe6ff;
+  font-weight: 700;
+  font-size: 17px;
+}
+.cover-count b { color: #ffc12d; font-size: 22px; }
+.cover-hint {
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 600;
+  font-size: 13.5px;
+}
+/* страница серии */
+.book-series {
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.series-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.series-head h2 {
+  font-size: clamp(22px, 4.4vw, 30px);
+  font-weight: 900;
+  color: #6e4a1f;
+  font-style: italic;
+}
+.series-count {
+  margin-left: auto;
+  font-weight: 900;
+  color: #b8560a;
+  font-size: 17px;
+}
+.series-progress {
+  margin-top: 8px;
+  block-size: 8px;
+  border-radius: 999px;
+  background: #eadfc8;
+  overflow: hidden;
+}
+.series-progress i {
   display: block;
   block-size: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #ff7a00, #ffae2c);
   transition: inline-size 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.st-grid {
-  margin-top: 14px;
+.series-grid {
+  margin-top: 16px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(10px, 2vw, 16px);
+  flex: 1;
+  align-content: start;
 }
-.sticker-tile {
-  aspect-ratio: 1;
-  border-radius: 18px;
-  display: grid;
-  place-items: center;
+@media (max-width: 560px) {
+  .series-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.slot {
   position: relative;
+  border-radius: 14px;
+  aspect-ratio: 0.86;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 4px;
   text-align: center;
   padding: 8px;
+  overflow: hidden;
+  animation: slot-in 0.4s ease both;
   transition: transform var(--t-pop);
 }
-.sticker-tile:hover {
-  transform: scale(1.06) rotate(-2deg);
+@keyframes slot-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.92); }
+  to { opacity: 1; transform: none; }
 }
-.sticker-tile.common { background: linear-gradient(145deg, #eef6ff, #dcebfb); }
-.sticker-tile.rare { background: linear-gradient(145deg, #f3edff, #e3d5ff); }
-.sticker-tile.epic {
-  background: linear-gradient(145deg, #fff3d6, #ffe1a8);
-  box-shadow: 0 0 0 2px rgba(255, 178, 32, 0.5), 0 6px 14px rgba(240, 150, 0, 0.25);
-}
-.sticker-tile .glyph {
-  font-size: clamp(30px, 6vw, 44px);
-  line-height: 1;
-  filter: drop-shadow(0 3px 5px rgba(40, 60, 110, 0.22));
-}
-.sticker-tile b {
-  display: block;
-  font-size: 10.5px;
-  margin-top: 4px;
-  color: #44557e;
+.slot:hover { transform: scale(1.05) rotate(-1.5deg); }
+.slot b {
+  font-size: 11px;
+  color: #6e5a3a;
   line-height: 1.15;
 }
-.sticker-tile.missing {
-  background: #f0f3f8;
-  border: 2px dashed #ccd7e6;
+.slot.empty {
+  border: 2px dashed #d3c39f;
+  background: rgba(255, 255, 255, 0.5);
 }
-.sticker-tile.missing .glyph {
-  filter: grayscale(1) opacity(0.25);
+.slot-q {
+  font-size: 30px;
+  font-weight: 900;
+  color: #d3c39f;
 }
-.sticker-tile.missing b {
-  color: #a5b0c2;
+.slot.got {
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(110, 74, 31, 0.18), inset 0 0 0 1px rgba(180, 160, 120, 0.3);
+  /* «приклеена» слегка криво — как настоящая */
+  rotate: -1.2deg;
 }
-.sticker-tile .rarity {
+.slot.got:nth-child(even) { rotate: 1.4deg; }
+.slot-num {
   position: absolute;
-  top: 6px;
-  right: 8px;
+  top: 5px;
+  left: 7px;
   font-size: 10px;
+  font-weight: 900;
+  color: #b09a6e;
+}
+/* блик по собранной наклейке */
+.slot-shine {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.55) 45%, transparent 60%);
+  transform: translateX(-120%);
+  animation: shine-sweep 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes shine-sweep {
+  0%, 60% { transform: translateX(-120%); }
+  80%, 100% { transform: translateX(120%); }
+}
+/* фольга для редких */
+.slot-foil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.5;
+  background: linear-gradient(120deg, #ffd23e22, #ff6ba733 30%, #7fc3ff33 55%, #b98ef733 75%, #ffd23e22);
+  background-size: 300% 300%;
+  animation: foil-shift 4s linear infinite;
+}
+.slot-foil.epic {
+  opacity: 0.75;
+  box-shadow: inset 0 0 0 2px rgba(255, 178, 32, 0.65);
+}
+@keyframes foil-shift {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+.series-footer {
+  margin-top: 12px;
+  font-weight: 700;
+  color: #8a744c;
+  font-size: 13px;
+  font-style: italic;
+}
+.series-chest-link {
+  position: absolute;
+  right: 44px;
+  bottom: 14px;
+  font-weight: 800;
+  font-size: 12.5px;
+  color: #1667e0;
+  text-decoration: none;
+}
+.series-chest-link:hover { text-decoration: underline; }
+/* навигация */
+.book-nav {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.book-arrow {
+  inline-size: 52px;
+  block-size: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--grad-cta-blue);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: var(--sh-cta-blue);
+  transition: transform var(--t-fast);
+}
+.book-arrow:hover:not(:disabled) { transform: scale(1.08); }
+.book-arrow:disabled { background: #dfe6f0; color: #9aa5b7; box-shadow: none; cursor: not-allowed; }
+.book-dots { display: flex; gap: 8px; }
+.book-dot {
+  inline-size: 12px;
+  block-size: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #cbd6e6;
+  cursor: pointer;
+  transition: transform var(--t-fast), background var(--t-fast);
+}
+.book-dot.on { background: #1776ff; transform: scale(1.3); }
+@media (prefers-reduced-motion: reduce) {
+  .slot-shine, .slot-foil, .cover-badge { animation: none; }
 }

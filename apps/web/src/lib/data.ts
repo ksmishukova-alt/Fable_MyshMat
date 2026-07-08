@@ -16,8 +16,11 @@ export async function fetchHomeData(childId?: string): Promise<HomeScreenData> {
   return (await getHomeDataDb(childId)) ?? getHomeData();
 }
 
-export async function fetchSubjectTasks(subjectId: SubjectId): Promise<DailyTask[]> {
-  return (await getSubjectTasksDb(subjectId)) ?? getSubjectTasks(subjectId);
+export async function fetchSubjectTasks(
+  subjectId: SubjectId,
+  childId?: string,
+): Promise<DailyTask[]> {
+  return (await getSubjectTasksDb(subjectId, childId)) ?? getSubjectTasks(subjectId);
 }
 
 export async function fetchTaskContent(taskId: string): Promise<TaskContent | null> {

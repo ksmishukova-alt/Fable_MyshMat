@@ -1,118 +1,132 @@
 /**
- * Значки достижений (карта мышления): векторные щиты с символом темы.
- * Настоящий SVG-арт: градиентный щит, лента, звезда, блик; серый — не заработан.
+ * Медали достижений: объёмный вид с металлом трёх достоинств.
+ * Механика: бронза — пройдена «Тренировка» (L1), серебро — «С поддержкой» (L2),
+ * золото — тема освоена целиком (L3). Без медали — гравировка-контур.
  */
 
-const TOPIC_COLORS: Record<string, [string, string]> = {
-  blue: ["#63b4ff", "#1167e8"],
-  purple: ["#a975ff", "#6234d8"],
-  green: ["#86d953", "#209d39"],
-  orange: ["#ffc35b", "#f08c00"],
-  pink: ["#ff6ba7", "#e82377"],
+export type BadgeTier = "none" | "bronze" | "silver" | "gold";
+
+/** металл: [обод-светлый, обод-тёмный, поле-светлое, поле-тёмное, гравировка] */
+const METALS: Record<Exclude<BadgeTier, "none">, [string, string, string, string, string]> = {
+  bronze: ["#e8a05c", "#8b5a2b", "#d98e48", "#a96a33", "#6e441d"],
+  silver: ["#f2f4fa", "#9aa4b8", "#dde3ee", "#b4bccc", "#707a8e"],
+  gold: ["#ffe27a", "#c8920a", "#ffd23e", "#e0a90f", "#8a6400"],
 };
 
-/** Символ темы внутри щита (рисуется в системе координат 0..40, центр 20,17). */
-function TopicSymbol({ topicId }: { topicId: string }) {
+/** Символ темы (координаты 0..40, центр ~20,20). */
+function TopicSymbol({ topicId, tone }: { topicId: string; tone: string }) {
   switch (topicId) {
-    case "heads-legs": // заяц: голова + уши
+    case "heads-legs":
       return (
-        <g fill="#fff" opacity="0.95">
-          <ellipse cx="20" cy="21" rx="8" ry="7" />
-          <ellipse cx="15.5" cy="10" rx="3" ry="7.5" transform="rotate(-14 15.5 10)" />
-          <ellipse cx="24.5" cy="10" rx="3" ry="7.5" transform="rotate(14 24.5 10)" />
-          <circle cx="17" cy="20" r="1.3" fill="#3a5" opacity="0.65" />
-          <circle cx="23" cy="20" r="1.3" fill="#3a5" opacity="0.65" />
+        <g fill={tone}>
+          <ellipse cx="20" cy="24" rx="7.5" ry="6.5" />
+          <ellipse cx="15.8" cy="13.5" rx="2.8" ry="7" transform="rotate(-14 15.8 13.5)" />
+          <ellipse cx="24.2" cy="13.5" rx="2.8" ry="7" transform="rotate(14 24.2 13.5)" />
         </g>
       );
-    case "parity": // весы
+    case "counting-figures":
       return (
-        <g stroke="#fff" strokeWidth="2.2" fill="none" strokeLinecap="round">
-          <line x1="20" y1="8" x2="20" y2="26" />
-          <line x1="9" y1="12" x2="31" y2="12" />
-          <path d="M9 12 L5.5 20 A4.5 4.5 0 0 0 12.5 20 Z" fill="#fff" opacity="0.9" stroke="none" />
-          <path d="M31 12 L27.5 20 A4.5 4.5 0 0 0 34.5 20 Z" fill="#fff" opacity="0.9" stroke="none" />
-          <line x1="15" y1="27" x2="25" y2="27" />
+        <g stroke={tone} strokeWidth="2.4" fill="none" strokeLinejoin="round">
+          <path d="M13 27 L20 13 L27 27 Z" />
+          <rect x="17.5" y="19.5" width="11" height="10" rx="1" />
         </g>
       );
-    case "logic": // пазл
+    case "parity":
+      return (
+        <g stroke={tone} strokeWidth="2.2" fill="none" strokeLinecap="round">
+          <line x1="20" y1="11" x2="20" y2="28" />
+          <line x1="10" y1="15" x2="30" y2="15" />
+          <path d="M10 15 L7 22 A3.8 3.8 0 0 0 13 22 Z" fill={tone} stroke="none" />
+          <path d="M30 15 L27 22 A3.8 3.8 0 0 0 33 22 Z" fill={tone} stroke="none" />
+          <line x1="15" y1="29" x2="25" y2="29" />
+        </g>
+      );
+    case "logic":
       return (
         <path
-          d="M12 10h6a3.5 3.5 0 1 1 5 0h6v6a3.5 3.5 0 1 0 0 5v7h-7a3.5 3.5 0 1 1-5 0h-5v-6a3.5 3.5 0 1 1 0-6Z"
-          fill="#fff"
-          opacity="0.95"
+          d="M13 13h5a3 3 0 1 1 4.5 0h5v5a3 3 0 1 0 0 4.5v6h-6a3 3 0 1 1-4.5 0h-4v-5a3 3 0 1 1 0-5.5Z"
+          fill={tone}
         />
       );
-    case "dirichlet": // голубь
+    case "dirichlet":
       return (
-        <g fill="#fff" opacity="0.95">
-          <path d="M10 20 Q16 10 26 12 Q24 15 21 16 Q30 17 33 13 Q32 22 24 25 Q17 28 11 24 Z" />
-          <circle cx="26.5" cy="13.5" r="1.1" fill="#3a5" opacity="0.7" />
-          <path d="M13 25 L11 29 M17 26 L16 30" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
-        </g>
-      );
-    case "counting-figures": // треугольник + квадрат
-      return (
-        <g stroke="#fff" strokeWidth="2.2" fill="none" strokeLinejoin="round">
-          <path d="M14 25 L21 10 L28 25 Z" />
-          <rect x="18" y="17" width="12" height="11" rx="1" fill="#fff" opacity="0.35" />
-          <rect x="18" y="17" width="12" height="11" rx="1" />
-        </g>
+        <path
+          d="M11 22 Q16 13 25 14.5 Q23.4 17 21 18 Q28.5 18.6 31 15.5 Q30 23 23 25.5 Q17 28 11.8 24.8 Z"
+          fill={tone}
+        />
       );
     default:
-      return <circle cx="20" cy="17" r="8" fill="#fff" opacity="0.9" />;
+      return <circle cx="20" cy="20" r="7.5" fill={tone} />;
   }
 }
 
 export function BadgeArt({
   topicId,
-  color,
-  earned,
+  tier,
   size = 64,
+  earned,
+  color: _color,
 }: {
   topicId: string;
-  color: string;
-  earned: boolean;
+  tier?: BadgeTier;
   size?: number;
+  /** обратная совместимость: earned=true без tier → золото */
+  earned?: boolean;
+  color?: string;
 }) {
-  const [c1, c2] = earned ? (TOPIC_COLORS[color] ?? TOPIC_COLORS.blue) : ["#cfd8e6", "#9daabb"];
-  const gid = `badge-${topicId}-${earned ? "on" : "off"}`;
+  const t: BadgeTier = tier ?? (earned ? "gold" : "none");
+  const uid = `bm-${topicId}-${t}`;
+
+  if (t === "none") {
+    return (
+      <svg width={size} height={(size * 60) / 52} viewBox="0 0 52 60" aria-hidden="true">
+        <circle cx="26" cy="32" r="20" fill="#eef1f6" stroke="#c9d3e2" strokeWidth="2.5" strokeDasharray="5 4" />
+        <g transform="translate(6 12)" opacity="0.45">
+          <TopicSymbol topicId={topicId} tone="#8b96ab" />
+        </g>
+      </svg>
+    );
+  }
+
+  const [rimL, rimD, faceL, faceD, engrave] = METALS[t];
   return (
     <svg
       width={size}
-      height={(size * 56) / 48}
-      viewBox="0 0 48 56"
+      height={(size * 60) / 52}
+      viewBox="0 0 52 60"
       aria-hidden="true"
-      style={{ filter: earned ? "drop-shadow(0 4px 8px rgba(27,72,124,.28))" : "none" }}
+      style={{ filter: `drop-shadow(0 4px 7px ${rimD}66)` }}
     >
       <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={c1} />
-          <stop offset="1" stopColor={c2} />
+        <linearGradient id={`${uid}-rim`} x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0" stopColor={rimL} />
+          <stop offset="1" stopColor={rimD} />
         </linearGradient>
+        <radialGradient id={`${uid}-face`} cx="0.35" cy="0.3" r="0.9">
+          <stop offset="0" stopColor={faceL} />
+          <stop offset="1" stopColor={faceD} />
+        </radialGradient>
       </defs>
       {/* лента */}
-      <path d="M14 38 L10 52 L17 48 L21 55 L24 42 Z" fill={earned ? "#e8556b" : "#b9c2d0"} />
-      <path d="M34 38 L38 52 L31 48 L27 55 L24 42 Z" fill={earned ? "#c2314f" : "#a5b0c2"} />
-      {/* щит */}
-      <path
-        d="M24 2 L42 8 V24 C42 34 34 41 24 45 C14 41 6 34 6 24 V8 Z"
-        fill={`url(#${gid})`}
-        stroke={earned ? "#ffffff" : "#e3e9f2"}
-        strokeWidth="2.4"
-      />
-      {/* блик */}
-      <path d="M24 4.5 L39.5 9.7 V15 C33 12 27 10.5 24 10.3 Z" fill="#fff" opacity="0.28" />
-      {/* символ темы */}
-      <g transform="translate(4 6)">
-        <TopicSymbol topicId={topicId} />
+      <path d="M17 4 L26 18 L35 4 L28.5 4 L26 8.5 L23.5 4 Z" fill="#2e77e6" />
+      <path d="M17 4 L23.5 4 L26 8.5 L21.5 15 Z" fill="#1c5cc4" />
+      {/* объём: нижняя толщина */}
+      <circle cx="26" cy="34" r="20" fill={rimD} />
+      {/* обод */}
+      <circle cx="26" cy="32" r="20" fill={`url(#${uid}-rim)`} />
+      {/* поле медали */}
+      <circle cx="26" cy="32" r="15.5" fill={`url(#${uid}-face)`} stroke={rimD} strokeWidth="1" />
+      {/* насечка обода */}
+      <circle cx="26" cy="32" r="17.8" fill="none" stroke={rimD} strokeWidth="0.8" strokeDasharray="1.6 2.2" opacity="0.6" />
+      {/* символ темы: тень + гравировка */}
+      <g transform="translate(6.6 12.6)" opacity="0.35">
+        <TopicSymbol topicId={topicId} tone="#ffffff" />
       </g>
-      {/* звезда снизу щита */}
-      <path
-        d="M24 33 l1.9 3.4 3.9 .6 -2.8 2.7 .7 3.8 -3.7 -1.8 -3.7 1.8 .7 -3.8 -2.8 -2.7 3.9 -.6 Z"
-        fill={earned ? "#ffd84a" : "#e6ecf4"}
-        stroke={earned ? "#e09a00" : "#c3cddb"}
-        strokeWidth="1"
-      />
+      <g transform="translate(6 12)">
+        <TopicSymbol topicId={topicId} tone={engrave} />
+      </g>
+      {/* блик */}
+      <ellipse cx="19" cy="24" rx="9" ry="5.5" fill="#ffffff" opacity="0.35" transform="rotate(-24 19 24)" />
     </svg>
   );
 }

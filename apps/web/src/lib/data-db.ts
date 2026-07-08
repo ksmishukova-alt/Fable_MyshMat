@@ -25,6 +25,18 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Текущий учебный день ребёнка (0-based) = прошедшие даты расписания − 1. */
+async function childDayIndex(childId: string): Promise<number> {
+  const sb = getSupabase();
+  if (!sb) return 0;
+  const { count } = await sb
+    .from("daily_schedule")
+    .select("*", { count: "exact", head: true })
+    .eq("child_id", childId)
+    .lte("date", today());
+  return Math.max((count ?? 0) - 1, 0);
+}
+
 /** Получить/создать сессию на сегодня. Возвращает id сессии. */
 async function ensureSession(childId: string): Promise<string | null> {
   const sb = getSupabase();
@@ -53,7 +65,7 @@ export async function getHomeDataDb(childId: string = DEMO_CHILD): Promise<HomeS
 
   const { data: child } = await sb
     .from("child_profiles")
-    .select("id,name,grade,stars,disabled_subjects")
+    .select("id,name,grade,stars,disabled_subjects,avatar_url")
     .eq("id", childId)
     .single();
   if (!child) return null;
@@ -80,21 +92,26 @@ export async function getHomeDataDb(childId: string = DEMO_CHILD): Promise<HomeS
     .select("subject,status,tasks_total,tasks_done")
     .eq("session_id", sessionId);
 
+  const dayIndex = await childDayIndex(child.id);
   const { data: configs } = await sb
     .from("daily_task_configs")
     .select("subject,task_id")
-    .eq("active", true);
+    .eq("active", true)
+    .eq("day_index", dayIndex);
 
-  const subjects: SubjectSummary[] = subjectOrder.map((sid) => {
-    const fromDb = progressRows?.find((r) => r.subject === sid);
-    const total = configs?.filter((c) => c.subject === sid).length ?? 0;
-    return {
-      subjectId: sid,
-      status: (fromDb?.status as SubjectStatus) ?? "notStarted",
-      tasksTotal: fromDb?.tasks_total ?? total,
-      tasksDone: fromDb?.tasks_done ?? 0,
-    };
-  });
+  const subjects: SubjectSummary[] = subjectOrder
+    .map((sid) => {
+      const fromDb = progressRows?.find((r) => r.subject === sid);
+      const total = configs?.filter((c) => c.subject === sid).length ?? 0;
+      return {
+        subjectId: sid,
+        status: (fromDb?.status as SubjectStatus) ?? "notStarted",
+        tasksTotal: fromDb?.tasks_total ?? total,
+        tasksDone: fromDb?.tasks_done ?? 0,
+      };
+    })
+    // предметы без задач на сегодня не участвуют в Daily (и в МышРутке)
+    .filter((sub) => sub.tasksTotal > 0);
 
   const myshroutkaGranted = isMyshroutkaEarned(subjects);
 
@@ -105,7 +122,7 @@ export async function getHomeDataDb(childId: string = DEMO_CHILD): Promise<HomeS
     .eq("status", "needsRevision");
 
   return {
-    profile: { id: child.id, name: child.name, grade: child.grade },
+    profile: { id: child.id, name: child.name, grade: child.grade, avatarUrl: child.avatar_url ?? undefined },
     session: {
       id: sessionId ?? "",
       childId: child.id,
@@ -141,18 +158,39 @@ async function stickersFromDb(childId: string): Promise<{ collected: number; tot
 }
 
 export async function getSubjectTasksDb(
-  subjectId: SubjectId
+  subjectId: SubjectId,
+  childId?: string
 ): Promise<DailyTask[] | null> {
   const sb = getSupabase();
   if (!sb) return null;
 
+  const child = childId ?? DEMO_CHILD;
+  const dayIndex = await childDayIndex(child);
   const { data } = await sb
     .from("daily_task_configs")
     .select("ord,tasks(id,subject,title,mode,est_minutes)")
     .eq("subject", subjectId)
     .eq("active", true)
+    .eq("day_index", dayIndex)
     .order("ord");
-  if (!data) return null;
+  if (!data || data.length === 0) return data ? [] : null;
+
+  // статусы задач из сегодняшних попыток
+  const { data: sess } = await sb
+    .from("daily_sessions")
+    .select("id")
+    .eq("child_id", child)
+    .eq("date", today())
+    .maybeSingle();
+  const statusByTask = new Map<string, SubjectStatus>();
+  if (sess?.id) {
+    const { data: att } = await sb
+      .from("daily_task_attempts")
+      .select("task_id,status,submitted_at")
+      .eq("session_id", sess.id)
+      .order("submitted_at", { ascending: true });
+    for (const a of att ?? []) statusByTask.set(a.task_id as string, a.status as SubjectStatus);
+  }
 
   return data.map((row, i) => {
     const r = row as unknown as {
@@ -174,7 +212,7 @@ export async function getSubjectTasksDb(
       mode: t.mode as DailyTask["mode"],
       order: r.ord ?? i + 1,
       estMinutes: t.est_minutes ?? undefined,
-      status: "notStarted",
+      status: statusByTask.get(t.id) ?? "notStarted",
     };
   });
 }
@@ -197,13 +235,16 @@ export async function getTaskContentDb(taskId: string): Promise<TaskContent | nu
     .order("ord");
 
   // позиция в предмете
-  const { data: cfg } = await sb
+  const { data: cfgAll } = await sb
     .from("daily_task_configs")
-    .select("task_id,ord")
+    .select("task_id,ord,day_index")
     .eq("subject", task.subject)
     .eq("active", true)
     .order("ord");
-  const order = (cfg?.findIndex((c) => c.task_id === taskId) ?? 0) + 1;
+  // конфиг дня, в котором лежит эта задача (день фиксируется самой задачей)
+  const ownDay = cfgAll?.find((c) => c.task_id === taskId)?.day_index ?? 0;
+  const cfg = (cfgAll ?? []).filter((c) => c.day_index === ownDay);
+  const order = (cfg.findIndex((c) => c.task_id === taskId) ?? 0) + 1;
 
   const mappedSteps: TaskStep[] | undefined = steps?.map((row) => {
     const s = row as unknown as {
@@ -233,7 +274,7 @@ export async function getTaskContentDb(taskId: string): Promise<TaskContent | nu
     title: task.title,
     mode: (task.mode as unknown) as TaskContent["mode"],
     order,
-    total: cfg?.length ?? 1,
+    total: cfg.length || 1,
     estMinutes: task.est_minutes ?? undefined,
     prompt: task.prompt ?? "",
     steps: mappedSteps,
@@ -246,13 +287,15 @@ export async function getNextTaskIdDb(
 ): Promise<string | null> {
   const sb = getSupabase();
   if (!sb) return null;
-  const { data } = await sb
+  const { data: all } = await sb
     .from("daily_task_configs")
-    .select("task_id,ord")
+    .select("task_id,ord,day_index")
     .eq("subject", subjectId)
     .eq("active", true)
     .order("ord");
-  if (!data) return null;
+  if (!all) return null;
+  const ownDay = all.find((c) => c.task_id === currentId)?.day_index ?? 0;
+  const data = all.filter((c) => c.day_index === ownDay);
   const idx = data.findIndex((c) => c.task_id === currentId);
   if (idx === -1 || idx === data.length - 1) return null;
   return data[idx + 1].task_id as string;

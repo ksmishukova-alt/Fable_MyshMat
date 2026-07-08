@@ -120,15 +120,29 @@ export async function toggleEquip(childId: string, itemId: string): Promise<Masc
 // ─────────────────────────────────────────────
 // Значки за темы (карта мышления)
 // ─────────────────────────────────────────────
+export type BadgeTier = "none" | "bronze" | "silver" | "gold";
+
 export async function getBadges(childId: string) {
   const nodes = await getTopicNodes(childId);
-  return TOPICS.map((t) => ({
-    topicId: t.id,
-    title: t.title,
-    glyph: t.glyph,
-    color: t.color,
-    earned: nodes.find((n) => n.topicId === t.id)?.mastered ?? false,
-  }));
+  return TOPICS.map((t) => {
+    const n = nodes.find((x) => x.topicId === t.id);
+    // золото — тема освоена; серебро — дошёл до L3; бронза — дошёл до L2
+    const tier: BadgeTier = n?.mastered
+      ? "gold"
+      : (n?.level ?? 1) >= 3
+        ? "silver"
+        : (n?.level ?? 1) >= 2
+          ? "bronze"
+          : "none";
+    return {
+      topicId: t.id,
+      title: t.title,
+      glyph: t.glyph,
+      color: t.color,
+      earned: n?.mastered ?? false,
+      tier,
+    };
+  });
 }
 
 // ─────────────────────────────────────────────

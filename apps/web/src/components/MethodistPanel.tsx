@@ -458,7 +458,7 @@ function BankTab({ setMsg }: { setMsg: (m: { text: string; err?: boolean }) => v
       const d = await res.json();
       setMsg(
         res.ok
-          ? { text: `Сид выполнен: добавлено ${d.inserted} из ${d.total} заданий` }
+          ? { text: `Готово: задач в банке ${d.tasksTotal} (новых ${d.tasksInserted}), расписание контента: ${d.configs} позиций` }
           : { text: d.error ?? "Ошибка сида", err: true },
       );
     } finally {
@@ -489,8 +489,34 @@ function BankTab({ setMsg }: { setMsg: (m: { text: string; err?: boolean }) => v
     }
   }
 
+  async function testTelegram() {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/methodist/telegram-test", { method: "POST" });
+      const d = (await res.json()) as { ok: boolean; reason?: string };
+      setMsg(
+        d.ok
+          ? { text: "Telegram работает — проверь чат с ботом!" }
+          : { text: `Telegram не настроен: ${d.reason}. На Vercel добавь переменные TELEGRAM_BOT_TOKEN и TELEGRAM_PARENT_CHAT_ID (Settings → Environment Variables) и передеплой.`, err: true },
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <>
+      <section className="mt-card">
+        <h2>Проверка Telegram</h2>
+        <p className="hint">
+          Отправляет тестовое сообщение методисту. Если не приходит — проверь env-переменные
+          на Vercel и что ты нажимала Start у бота.
+        </p>
+        <button className="mt-btn secondary" disabled={busy} onClick={() => void testTelegram()}>
+          Отправить тест в Telegram
+        </button>
+      </section>
+
       <section className="mt-card">
         <h2>Контент Daily недель 1–10</h2>
         <p className="hint">

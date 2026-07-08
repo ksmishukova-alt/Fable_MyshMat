@@ -153,3 +153,82 @@
   gap: 10px;
   flex-wrap: wrap;
 }
+
+/* конструктор аватара */
+.av-editor {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(16px, 3vw, 30px);
+  align-items: start;
+}
+@media (max-width: 640px) {
+  .av-editor { grid-template-columns: 1fr; justify-items: center; }
+}
+.av-preview {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+.av-preview-ring {
+  border-radius: 50%;
+  padding: 6px;
+  background: linear-gradient(135deg, #7fc3ff, #2e77e6);
+  box-shadow: 0 10px 24px rgba(27, 72, 124, 0.2);
+  animation: rise-in 0.3s ease both;
+}
+.av-preview-ring svg {
+  border-radius: 50%;
+  background: #e9f3ff;
+}
+.av-controls {
+  display: grid;
+  gap: 12px;
+  min-inline-size: 0;
+}
+.av-group b {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: #5a6a8c;
+  margin-bottom: 6px;
+}
+.av-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.av-swatch {
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: transform var(--t-fast), border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.av-swatch:hover { transform: scale(1.1); }
+.av-swatch.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px #1776ff, 0 4px 10px rgba(27, 72, 124, 0.25);
+  transform: scale(1.08);
+}
+.av-acc,
+.av-preset {
+  min-block-size: 44px;
+  min-inline-size: 44px;
+  border: 2px solid #dbe5f1;
+  border-radius: 12px;
+  background: #fff;
+  font: inherit;
+  font-weight: 800;
+  font-size: 13px;
+  color: #44557e;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+.av-acc:hover, .av-preset:hover { border-color: #9cc4ff; transform: translateY(-2px); }
+.av-acc.on { border-color: #1776ff; background: #eef6ff; }
+.av-preset { border-radius: 50%; padding: 2px; }

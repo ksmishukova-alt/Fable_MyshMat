@@ -7,9 +7,19 @@
 
 const API = "https://api.telegram.org";
 
-export async function sendTelegram(chatId: string | undefined, text: string): Promise<boolean> {
+export interface TgResult {
+  ok: boolean;
+  reason?: string;
+}
+
+/** Отправка с детальной причиной (для диагностики). */
+export async function sendTelegramDetailed(
+  chatId: string | undefined,
+  text: string,
+): Promise<TgResult> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token || !chatId) return false;
+  if (!token) return { ok: false, reason: "TELEGRAM_BOT_TOKEN не задан (env)" };
+  if (!chatId) return { ok: false, reason: "chat_id не задан (env)" };
   try {
     const res = await fetch(`${API}/bot${token}/sendMessage`, {
       method: "POST",
@@ -17,10 +27,16 @@ export async function sendTelegram(chatId: string | undefined, text: string): Pr
       body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
       signal: AbortSignal.timeout(8000),
     });
-    return res.ok;
-  } catch {
-    return false;
+    if (res.ok) return { ok: true };
+    const body = (await res.json().catch(() => null)) as { description?: string } | null;
+    return { ok: false, reason: `Telegram API ${res.status}: ${body?.description ?? "ошибка"}` };
+  } catch (e) {
+    return { ok: false, reason: `сеть: ${e instanceof Error ? e.message : "недоступен"}` };
   }
+}
+
+export async function sendTelegram(chatId: string | undefined, text: string): Promise<boolean> {
+  return (await sendTelegramDetailed(chatId, text)).ok;
 }
 
 export function methodistChatId(): string | undefined {

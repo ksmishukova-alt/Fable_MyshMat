@@ -16,10 +16,13 @@ function LoginInner() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  /** idle → checking → success | error (визуальные статусы входа) */
+  const [status, setStatus] = useState<"idle" | "checking" | "success" | "error">("idle");
 
   async function submit(body: Record<string, string>) {
     setBusy(true);
     setError("");
+    setStatus("checking");
     try {
       const res = await fetch("/api/login", {
         method: "POST",
@@ -28,17 +31,29 @@ function LoginInner() {
       });
       const data = await res.json();
       if (!res.ok) {
+        setStatus("error");
         setError(data.error ?? "Не получилось войти");
-        setPin("");
+        setTimeout(() => {
+          setPin("");
+          setStatus("idle");
+          setBusy(false);
+        }, 700);
         return;
       }
+      setStatus("success");
       const next = params.get("next");
-      router.push(data.role === "child" && next ? next : data.home);
-      router.refresh();
+      // короткая пауза, чтобы ребёнок увидел зелёную галочку
+      setTimeout(() => {
+        router.push(data.role === "child" && next ? next : data.home);
+        router.refresh();
+      }, 550);
     } catch {
+      setStatus("error");
       setError("Нет связи. Попробуй ещё раз");
-    } finally {
-      setBusy(false);
+      setTimeout(() => {
+        setStatus("idle");
+        setBusy(false);
+      }, 900);
     }
   }
 
@@ -101,11 +116,30 @@ function LoginInner() {
                 autoCapitalize="none"
               />
             </div>
-            <div className="pin-dots" aria-label={`PIN: введено ${pin.length} из ${PIN_LEN}`}>
+            <div
+              className={`pin-dots st-${status}`}
+              aria-label={`PIN: введено ${pin.length} из ${PIN_LEN}`}
+              aria-live="polite"
+            >
               {Array.from({ length: PIN_LEN }, (_, i) => (
                 <span key={i} className={`pin-dot${i < pin.length ? " filled" : ""}`} />
               ))}
             </div>
+            {status === "checking" && (
+              <div className="login-status checking" role="status">
+                <span className="login-spinner" aria-hidden="true" /> Проверяем PIN…
+              </div>
+            )}
+            {status === "success" && (
+              <div className="login-status success" role="status">
+                <span className="login-check" aria-hidden="true">✓</span> Привет! Заходим…
+              </div>
+            )}
+            {status === "error" && (
+              <div className="login-status errorst" role="status">
+                ✗ Неверный логин или PIN
+              </div>
+            )}
             <div className="pin-pad">
               {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((k) => (
                 <button key={k} className="pin-key" onClick={() => pressKey(k)}>
@@ -151,7 +185,15 @@ function LoginInner() {
               />
             </div>
             <button className="btn-cta btn-cta--blue login-submit" disabled={busy} type="submit">
-              {busy ? "Входим…" : "Войти"}
+              {status === "checking" ? (
+                <>
+                  <span className="login-spinner light" aria-hidden="true" /> Проверяем…
+                </>
+              ) : status === "success" ? (
+                "✓ Заходим…"
+              ) : (
+                "Войти"
+              )}
             </button>
           </form>
         )}

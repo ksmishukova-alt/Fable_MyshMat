@@ -7,14 +7,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MascotView, ItemArt } from "@/components/MascotView";
-import { BadgeArt } from "@/components/BadgeArt";
+import { BadgeArt, type BadgeTier } from "@/components/BadgeArt";
 import type { MascotState, ShopItem } from "@/types/rewards";
 import "./rewards.css";
 
 interface RewardsData {
   stars: number;
   mascot: MascotState;
-  badges: { topicId: string; title: string; glyph: string; color: string; earned: boolean }[];
+  badges: { topicId: string; title: string; glyph: string; color: string; earned: boolean; tier: BadgeTier }[];
   shop: ShopItem[];
   riddle: { question: string; hint: string; rewardStars: number; solved: boolean };
 }
@@ -149,15 +149,24 @@ export default function RewardsPage() {
           <section className="rw-card">
             <h2>🏅 Карта мышления</h2>
             <div className="sub">
-              Значки за приручённые темы: {earnedCount} из {data.badges.length}
+              Бронза — тренировка пройдена · серебро — уровень «С поддержкой» · золото — тема освоена. Золотых: {earnedCount} из {data.badges.length}
             </div>
             <div className="badge-grid">
               {data.badges.map((b) => (
-                <div className={`badge${b.earned ? "" : " off"}`} key={b.topicId}>
+                <div className={`badge${b.tier === "none" ? " off" : ""}`} key={b.topicId}>
                   <span className="badge-art" aria-hidden="true">
-                    <BadgeArt topicId={b.topicId} color={b.color} earned={b.earned} size={56} />
+                    <BadgeArt topicId={b.topicId} tier={b.tier} size={56} />
                   </span>
                   <b>{b.title}</b>
+                  <span className={`tier-label ${b.tier}`}>
+                    {b.tier === "gold"
+                      ? "Золото"
+                      : b.tier === "silver"
+                        ? "Серебро"
+                        : b.tier === "bronze"
+                          ? "Бронза"
+                          : "Впереди!"}
+                  </span>
                 </div>
               ))}
             </div>

@@ -346,3 +346,18 @@
 .badge.off .badge-art {
   opacity: 0.85;
 }
+
+/* достоинство медали */
+.tier-label {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 10.5px;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 2px 10px;
+  letter-spacing: 0.3px;
+}
+.tier-label.gold { background: #fff3c9; color: #8a6400; }
+.tier-label.silver { background: #eef1f7; color: #5d6678; }
+.tier-label.bronze { background: #f7e5d2; color: #8b5a2b; }
+.tier-label.none { background: #eef1f6; color: #9aa5b7; }

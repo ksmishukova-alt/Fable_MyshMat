@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { fetchSubjectTasks } from "@/lib/data";
+import { getCurrentChildId } from "@/lib/session";
 import { SUBJECTS, type SubjectId } from "@/types/domain";
 import { statusToChip, modeLabel, modeIcon, plural } from "@/lib/status";
 import "./subject.css";
@@ -17,7 +18,8 @@ export default async function SubjectPage({
 
   const subjectId = subject as SubjectId;
   const meta = SUBJECTS[subjectId];
-  const tasks = await fetchSubjectTasks(subjectId);
+  const childId = await getCurrentChildId();
+  const tasks = await fetchSubjectTasks(subjectId, childId);
 
   return (
     <main className="subject-stage" aria-label={`Задания: ${meta.title}`}>
