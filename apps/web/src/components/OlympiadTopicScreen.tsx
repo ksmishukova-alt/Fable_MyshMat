@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { OLYMPIAD_MAX_ATTEMPTS, LEVEL_INFO, type OlympiadLevel, type FigureSpec } from "@/types/olympiad";
 import { FigureArt } from "@/components/FigureArt";
+import { FeedbackOverlay, type FxState } from "@/components/FeedbackOverlay";
 
 interface SanStep {
   id: string;
@@ -82,6 +83,8 @@ export function OlympiadTopicScreen({
     text: "Я рядом — читай условие и вперёд!",
   });
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [fx, setFx] = useState<FxState | null>(null);
+  const playFx = (kind: "good" | "bad") => setFx({ kind, n: Math.floor(Math.random() * 1000) });
   const startRef = useRef(Date.now());
   const hintIdxRef = useRef(0);
 
@@ -128,6 +131,7 @@ export function OlympiadTopicScreen({
       setResult(r);
       setPhase("failed");
     } else {
+      playFx("bad");
       setBubble({ tone: "bad", text: w === 1 ? "Хм, не то. Попробуй ещё!" : "Ещё одна попытка — думай смелее!" });
     }
     return w;
@@ -143,6 +147,7 @@ export function OlympiadTopicScreen({
       answerGiven,
       worksheetUrl,
     });
+    playFx("good");
     setResult(r);
     setPhase("solved");
     if (r.levelUp || r.mastered) setShowLevelUp(true);
@@ -237,6 +242,7 @@ export function OlympiadTopicScreen({
 
   return (
     <Shell topicTitle={topicTitle} level={problem.level}>
+      <FeedbackOverlay fx={fx} />
       <div className="oly-problem-title">
         {problem.title}
         <span className="oly-attempts" aria-label={`Осталось попыток: ${OLYMPIAD_MAX_ATTEMPTS - wrongs}`}>

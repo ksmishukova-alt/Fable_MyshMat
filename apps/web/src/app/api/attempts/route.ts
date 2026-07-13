@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     isCorrect?: boolean;
     autonomyScore?: number;
     steps?: StepStat[];
+    solutionUrl?: string;
   };
   try {
     body = await req.json();
@@ -57,10 +58,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, reason: error.message }, { status: 500 });
   }
 
-  // пошаговая аналитика — только если step_id настоящие UUID (иначе пропускаем,
-  // чтобы не падать на FK; на реальном контенте step.id приходит из БД)
   const result = data as { ok?: boolean; attemptId?: string } | null;
   const attemptId = result?.attemptId;
+
+  // фото листочка: дописываем URL в созданную попытку
+  if (body.solutionUrl && attemptId) {
+    await sb
+      .from("daily_task_attempts")
+      .update({ uploaded_solution_url: body.solutionUrl })
+      .eq("id", attemptId);
+  }
+
+  // пошаговая аналитика — только если step_id настоящие UUID (иначе пропускаем,
+  // чтобы не падать на FK; на реальном контенте step.id приходит из БД)
   if (attemptId && body.steps?.length) {
     const realSteps = body.steps.filter((s) => UUID_RE.test(s.stepId));
     if (realSteps.length) {

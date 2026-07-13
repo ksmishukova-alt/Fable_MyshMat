@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { PhotoUploadButton } from "@/components/PhotoUploadButton";
 import type { TaskStep } from "@/types/domain";
 
 /**
@@ -16,7 +17,7 @@ export function AudioDictationRunner({
   onDone,
 }: {
   step: TaskStep;
-  onDone: () => void;
+  onDone: (url?: string) => void;
 }) {
   const limit = step.listenLimit ?? 2;
   const hasAudio = !!step.audioUrl;
@@ -78,19 +79,14 @@ export function AudioDictationRunner({
       </p>
 
       {!uploaded ? (
-        <button
-          type="button"
-          className="ts-upload"
+        <PhotoUploadButton
           disabled={plays === 0}
-          onClick={() => {
+          hint={plays === 0 ? "Сначала прослушай хотя бы раз" : "Фото из тетради уйдёт методисту"}
+          onUploaded={(url) => {
             setUploaded(true);
-            onDone();
+            onDone(url);
           }}
-        >
-          <span className="ts-upload-ic">📷</span>
-          <span>Загрузить фото работы</span>
-          <small>{plays === 0 ? "Сначала прослушай хотя бы раз" : "Нажми, чтобы прикрепить фото из тетради"}</small>
-        </button>
+        />
       ) : (
         <div className="ts-upload-done">
           <span className="ts-upload-ic">✅</span>

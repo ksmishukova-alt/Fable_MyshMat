@@ -16,6 +16,8 @@ import { AudioDictationRunner } from "@/components/runners/AudioDictationRunner"
 import { ListeningRunner } from "@/components/runners/ListeningRunner";
 import { ProofreadRunner } from "@/components/runners/ProofreadRunner";
 import { ReadAloudRunner } from "@/components/runners/ReadAloudRunner";
+import { PhotoUploadButton } from "@/components/PhotoUploadButton";
+import { FeedbackOverlay, type FxState } from "@/components/FeedbackOverlay";
 
 type StepPhase = "solving" | "correct" | "wrong" | "failed";
 
@@ -46,13 +48,27 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
   const steps: TaskStep[] = task.steps ?? [];
 
   const [uploaded, setUploaded] = useState(false);
+  const [manualPhotoUrl, setManualPhotoUrl] = useState<string | null>(null);
+  const [fx, setFx] = useState<FxState | null>(null);
+  /** случайный эффект «салют-микса»; новый nonce перезапускает анимацию */
+  function playFx(kind: "good" | "bad") {
+    setFx({ kind, n: Math.floor(Math.random() * 1000) });
+  }
   const [stepIdx, setStepIdx] = useState(0);
   const [states, setStates] = useState<StepState[]>(() => steps.map(freshStep));
 
   if (isWorksheet) {
     return (
       <WorksheetView task={task} subjectTitle={subject.title} uploaded={uploaded}
-        onUpload={() => setUploaded(true)} onBack={() => router.push(`/daily/${task.subjectId}`)}
+        onUpload={(url) => {
+          setUploaded(true);
+          // фиксируем попытку с фото — уходит методисту на проверку
+          void fetch("/api/attempts", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ taskId: task.id, mode: "worksheet", solutionUrl: url }),
+          }).catch(() => {});
+        }}
+        onBack={() => router.push(`/daily/${task.subjectId}`)}
         onNext={() => (nextTaskId ? router.push(`/daily/${task.subjectId}/${nextTaskId}`) : router.push("/"))}
         nextTaskId={nextTaskId} />
     );
@@ -91,17 +107,20 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
 
     const attempts = st.attempts + 1;
     if (ok) {
+      playFx("good");
       patch({
         attempts,
         phase: "correct",
         solvedFirstTry: attempts === 1 && !st.hintUsed ? true : st.solvedFirstTry,
       });
-      // одна кнопка «Завершить»: верно → короткий флеш и сразу дальше
-      window.setTimeout(() => goNext(), 900);
+      // одна кнопка «Завершить»: салют → и сразу дальше
+      window.setTimeout(() => goNext(), 1050);
     } else if (attempts >= MAX_ATTEMPTS) {
+      playFx("bad");
       patch({ attempts, phase: "failed", hintUsed: true });
     } else {
       // остаёмся на месте: попытка сгорела, подсказка открылась
+      playFx("bad");
       patch({ attempts, phase: "solving", hintUsed: true });
     }
   }
@@ -127,6 +146,7 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
         taskId: task.id, mode: task.mode,
         isCorrect: states.every((s) => s.phase === "correct"),
         autonomyScore: report.autonomyScore, steps: report.steps,
+        solutionUrl: manualPhotoUrl ?? undefined,
       }),
     }).catch(() => {});
   }
@@ -147,10 +167,10 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
 
   const resolved = st.phase === "correct" || st.phase === "failed";
   const locked = resolved;
-  const stars = st.hintUsed ? 5 : 10;
 
   return (
     <main className="task-stage" aria-label={`${subject.title}: ${task.title}`}>
+      <FeedbackOverlay fx={fx} />
       <div className="task-col wide">
         <header className="ts-top">
           <button
@@ -190,7 +210,15 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {step.kind === "gapinput" && <GapInputRunner step={step} locked={locked} onState={onState} />}
           {step.kind === "sort" && <SortRunner step={step} locked={locked} onState={onState} />}
           {step.kind === "fields" && <FieldsRunner step={step} locked={locked} onState={onState} />}
-          {step.kind === "audio" && <AudioDictationRunner step={step} onDone={() => patch({ phase: "correct" })} />}
+          {step.kind === "audio" && (
+            <AudioDictationRunner
+              step={step}
+              onDone={(url) => {
+                if (url) setManualPhotoUrl(url);
+                patch({ phase: "correct" });
+              }}
+            />
+          )}
           {step.kind === "listening" && <ListeningRunner step={step} locked={locked} onState={onState} />}
           {step.kind === "proofread" && <ProofreadRunner step={step} locked={locked} onState={onState} />}
           {step.kind === "readaloud" && <ReadAloudRunner step={step} onDone={() => patch({ phase: "correct" })} />}
@@ -219,16 +247,10 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {!isReading && !isManual && st.hintUsed && step.hint && <div className="ts-hint">💡 {step.hint}</div>}
 
           {/* Вердикт после «Проверить» */}
-          {st.phase === "correct" && !isManual && (
-            <div className="ts-result ok"><b>Верно! 🎉</b><span>+{stars} ⭐ {st.hintUsed && "(с подсказкой)"}</span></div>
-          )}
           {st.phase === "solving" && st.attempts > 0 && (
             <div className="ts-result no">
-              <b>Попробуй ещё раз 💪</b>
-              <span>
-                Попытка {st.attempts} из {MAX_ATTEMPTS}.{" "}
-                {step.hint ? "Подсказка уже открылась выше!" : "Подумай ещё чуть-чуть."}
-              </span>
+              <b>Попытка {st.attempts} из {MAX_ATTEMPTS}</b>
+              <span>{step.hint ? "Подсказка уже открылась выше!" : "Подумай ещё чуть-чуть."}</span>
             </div>
           )}
           {st.phase === "failed" && (
@@ -271,7 +293,7 @@ function WorksheetView({
   task, subjectTitle, uploaded, onUpload, onBack, onNext, nextTaskId,
 }: {
   task: TaskContent; subjectTitle: string; uploaded: boolean;
-  onUpload: () => void; onBack: () => void; onNext: () => void; nextTaskId: string | null;
+  onUpload: (url: string) => void; onBack: () => void; onNext: () => void; nextTaskId: string | null;
 }) {
   return (
     <main className="task-stage" aria-label={`${subjectTitle}: ${task.title}`}>
@@ -286,11 +308,7 @@ function WorksheetView({
           <h1 className="ts-title">{task.title}</h1>
           <WorksheetBody prompt={task.prompt} />
           {!uploaded ? (
-            <button className="ts-upload" onClick={onUpload}>
-              <span className="ts-upload-ic">📷</span>
-              <span>Сфотографировать решение</span>
-              <small>Нажми, чтобы загрузить фото с листочка</small>
-            </button>
+            <PhotoUploadButton onUploaded={onUpload} hint="Фото листочка уйдёт методисту на проверку" />
           ) : (
             <>
               <div className="ts-upload-done"><span className="ts-upload-ic">✅</span><p>Решение отправлено взрослому на проверку</p></div>
