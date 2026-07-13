@@ -7,6 +7,7 @@ import { TOPICS } from "@/lib/olympiad-bank";
 import { LEVEL_INFO } from "@/types/olympiad";
 import { BadgeArt } from "@/components/BadgeArt";
 import { SwitchProfileButton } from "@/components/SwitchProfileButton";
+import { StarIcon, MedalIcon, AlbumIcon } from "@/components/Icons";
 import { AvatarEditor } from "@/components/AvatarEditor";
 import { AvatarView } from "@/components/AvatarView";
 import { getAvatar } from "@/lib/avatar";
@@ -44,9 +45,9 @@ export default async function ProfilePage() {
             <div className="pf-name">{session?.name ?? home.profile.name}</div>
             <div className="pf-grade">{home.profile.grade} класс · ступень Мыша {mascot.growthStage} из 5</div>
             <div className="pf-stat-row">
-              <span className="pf-chip stars">⭐ {stars} звёзд</span>
-              <span className="pf-chip badges">🏅 {badges.filter((b) => b.earned).length} из {badges.length} золотых медалей</span>
-              <span className="pf-chip stickers">📒 {home.stickers.collected} из {home.stickers.total} наклеек</span>
+              <span className="pf-chip stars"><StarIcon size={16} /> {stars} звёзд</span>
+              <span className="pf-chip badges"><MedalIcon size={16} /> {badges.filter((b) => b.earned).length} из {badges.length} золотых медалей</span>
+              <span className="pf-chip stickers"><AlbumIcon size={16} /> {home.stickers.collected} из {home.stickers.total} наклеек</span>
             </div>
             <div className="pf-actions">
               <Link className="btn-cta btn-cta--blue" href="/rewards">

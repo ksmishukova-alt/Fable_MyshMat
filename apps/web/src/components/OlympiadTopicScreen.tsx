@@ -441,7 +441,7 @@ function GuidedRunner({
           </div>
           <div className="oly-input-row">
             <button
-              className="btn-cta btn-cta--blue oly-check"
+              className="btn-cta btn-cta--orange oly-check"
               disabled={!picked || busy}
               onClick={() => void check()}
             >
@@ -462,7 +462,7 @@ function GuidedRunner({
             }}
           />
           <button
-            className="btn-cta btn-cta--blue oly-check"
+            className="btn-cta btn-cta--orange oly-check"
             disabled={!input.trim() || busy}
             onClick={() => void check()}
           >
@@ -637,7 +637,7 @@ function SupportRunner({
         )}
         <div className="oly-input-row">
           <button
-            className="btn-cta btn-cta--blue oly-check"
+            className="btn-cta btn-cta--orange oly-check"
             disabled={planPick.length !== sup.planCards.length || busy}
             onClick={() => void checkPlan()}
           >
@@ -677,7 +677,7 @@ function SupportRunner({
               placeholder="Запиши выражение, напр. 10×4"
             />
             <button
-              className="btn-cta btn-cta--blue oly-check"
+              className="btn-cta btn-cta--orange oly-check"
               disabled={kindPick === null || !expr.trim() || busy}
               onClick={() => void checkAction()}
             >
@@ -710,7 +710,7 @@ function SupportRunner({
             placeholder="Как должно быть правильно?"
           />
           <button
-            className="btn-cta btn-cta--blue oly-check"
+            className="btn-cta btn-cta--orange oly-check"
             disabled={linePick === null || !fix.trim() || busy}
             onClick={() => void checkFindError()}
           >
@@ -735,7 +735,7 @@ function SupportRunner({
           }}
         />
         <button
-          className="btn-cta btn-cta--blue oly-check"
+          className="btn-cta btn-cta--orange oly-check"
           disabled={!answer.trim() || busy}
           onClick={() => void checkFinal()}
         >
@@ -822,7 +822,7 @@ function WorksheetRunner({
       </div>
       <div className="oly-input-row">
         <button
-          className="btn-cta btn-cta--blue oly-check"
+          className="btn-cta btn-cta--orange oly-check"
           disabled={!answer.trim() || busy}
           onClick={() => void submit()}
         >

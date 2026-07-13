@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MascotView, ItemArt } from "@/components/MascotView";
 import { BadgeArt, type BadgeTier } from "@/components/BadgeArt";
+import { MouseIcon, ShopIcon, MedalIcon, BrainIcon, StarIcon } from "@/components/Icons";
 import type { MascotState, ShopItem } from "@/types/rewards";
 import "./rewards.css";
 
@@ -59,7 +60,7 @@ export default function RewardsPage() {
     ).json()) as { correct: boolean; stars?: number; already?: boolean };
     if (res.correct) {
       setRiddleMsg(
-        res.already ? "Ты уже разгадал сегодняшнюю загадку!" : `Верно! +${res.stars} звёзд ⭐`,
+        res.already ? "Ты уже разгадал сегодняшнюю загадку!" : `Верно! +${res.stars} звёзд`,
       );
       setBump(true);
       setTimeout(() => setBump(false), 550);
@@ -88,14 +89,14 @@ export default function RewardsPage() {
           </Link>
           <div className="rw-title">Награды</div>
           <div className={`rw-stars${bump ? " bump" : ""}`} aria-label={`Звёзд: ${data.stars}`}>
-            ⭐ {data.stars}
+            <StarIcon /> {data.stars}
           </div>
         </div>
 
         <div className="rw-grid">
           {/* Маскот */}
           <section className="rw-card mascot-card">
-            <h2>🐭 Твой Мыш</h2>
+            <h2><MouseIcon /> Твой Мыш</h2>
             <div className="sub">Растёт от пройденных тем олимпиадного маршрута</div>
             <MascotView stage={data.mascot.growthStage} equipped={data.mascot.equipped} size={190} />
             <div className="growth-row" aria-label={`Ступень роста: ${data.mascot.growthStage} из 5`}>
@@ -110,7 +111,7 @@ export default function RewardsPage() {
 
           {/* Лавка */}
           <section className="rw-card">
-            <h2>🛍️ Лавка</h2>
+            <h2><ShopIcon /> Лавка</h2>
             <div className="sub">Трать звёзды — наряды по-настоящему появляются на Мыше</div>
             <div className="shop-grid">
               {data.shop.map((item) => {
@@ -136,7 +137,7 @@ export default function RewardsPage() {
                         disabled={data.stars < item.priceStars}
                         onClick={() => void shopAction("buy", item.id)}
                       >
-                        ⭐ {item.priceStars}
+                        <StarIcon size={16} /> {item.priceStars}
                       </button>
                     )}
                   </div>
@@ -147,7 +148,7 @@ export default function RewardsPage() {
 
           {/* Карта мышления: значки */}
           <section className="rw-card">
-            <h2>🏅 Карта мышления</h2>
+            <h2><MedalIcon /> Карта мышления</h2>
             <div className="sub">
               Бронза — тренировка пройдена · серебро — уровень «С поддержкой» · золото — тема освоена. Золотых: {earnedCount} из {data.badges.length}
             </div>
@@ -174,8 +175,8 @@ export default function RewardsPage() {
 
           {/* Загадка дня */}
           <section className="rw-card">
-            <h2>🧠 Загадка дня</h2>
-            <div className="sub">Маленькая головоломка-десерт · +{data.riddle.rewardStars} ⭐</div>
+            <h2><BrainIcon /> Загадка дня</h2>
+            <div className="sub">Маленькая головоломка-десерт · +{data.riddle.rewardStars} звёзд</div>
             <div className="riddle-q">{data.riddle.question}</div>
             {data.riddle.solved || riddleMsg?.startsWith("Верно") ? (
               <div className="riddle-solved">✓ Разгадано! Возвращайся завтра за новой загадкой.</div>
@@ -192,7 +193,7 @@ export default function RewardsPage() {
                     }}
                   />
                   <button
-                    className="btn-cta btn-cta--blue"
+                    className="btn-cta btn-cta--orange"
                     disabled={!riddleAnswer.trim()}
                     onClick={() => void answerRiddle()}
                   >

@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ChestState, ChestPrize } from "@/types/rewards";
-import { prizeGlyph } from "@/lib/chest";
 import { stickerById } from "@/lib/stickers-catalog";
 import { StickerArt } from "@/components/StickerArt";
+import { StarIcon, TicketIcon } from "@/components/Icons";
 import "./chests.css";
 
 const CONFETTI_COLORS = ["#FFB33A", "#4A8DFF", "#8B5CF6", "#42C263", "#F45D9E", "#FFD342"];
@@ -88,8 +88,10 @@ export default function ChestsPage() {
             <span className="prize-glyph">
               {prize.kind === "sticker" && prize.stickerId ? (
                 <StickerArt art={stickerById(prize.stickerId)?.art ?? ""} size={84} />
+              ) : prize.kind === "bonus" ? (
+                <span style={{ color: "#6d2ee5" }}><TicketIcon size={72} /></span>
               ) : (
-                prizeGlyph(prize)
+                <span style={{ color: "#f2a51a" }}><StarIcon size={72} /></span>
               )}
             </span>
             <div className="prize-label">{prize.label}</div>

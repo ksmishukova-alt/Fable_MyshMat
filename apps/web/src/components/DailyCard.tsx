@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { DailySession, SubjectId, WeekDay } from "@/types/domain";
 import { countSubmitted, SUBJECTS } from "@/types/domain";
 import { statusToChip, plural, leftVerb } from "@/lib/status";
+import { CalendarIcon, StarIcon } from "@/components/Icons";
 
 /** css-класс иконки предмета внутри .daily (см. globals.css) */
 const ICON_CLASS: Record<SubjectId, string> = {
@@ -80,7 +81,7 @@ export function DailyCard({
   return (
     <section className="daily card">
       <div className="daily-head">
-        <div className="calendar-icon">📅</div>
+        <div className="calendar-icon"><CalendarIcon size={34} /></div>
         <h1>Daily на сегодня</h1>
         <div className="sparkles">✦</div>
       </div>
@@ -95,7 +96,7 @@ export function DailyCard({
           </div>
         </div>
         <div className="daily-note">
-          <span className="star">★</span>
+          <span className="star"><StarIcon size={26} /></span>
           <span>
             {remaining > 0 ? (
               <>

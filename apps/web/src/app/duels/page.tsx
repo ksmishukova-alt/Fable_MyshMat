@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { DUEL_GAMES, type DuelGameId, type LeaderboardRow } from "@/types/duels";
+import { BoltIcon, PatternIcon, TargetIcon, StarIcon } from "@/components/Icons";
 import "./duels.css";
 
 interface Question {
@@ -236,7 +237,13 @@ export default function DuelsPage() {
             {Object.values(DUEL_GAMES).map((g) => (
               <button key={g.id} className="du-game" onClick={() => start(g.id)}>
                 <span className="glyph" aria-hidden="true">
-                  {g.glyph}
+                  {g.id === "mental-math" ? (
+                    <BoltIcon size={44} />
+                  ) : g.id === "patterns" ? (
+                    <PatternIcon size={44} />
+                  ) : (
+                    <TargetIcon size={44} />
+                  )}
                 </span>
                 <b>{g.title}</b>
                 <p>
@@ -254,7 +261,7 @@ export default function DuelsPage() {
                 ⏱ {Math.max(0, timeLeft)}
               </span>
               <b style={{ color: "#44557e" }}>{game.title}</b>
-              <span className="du-score">⭐ {score}</span>
+              <span className="du-score"><StarIcon size={16} /> {score}</span>
             </div>
             <div className="du-question" key={q.text}>
               {q.text}

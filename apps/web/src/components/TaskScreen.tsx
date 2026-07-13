@@ -151,14 +151,21 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
 
   return (
     <main className="task-stage" aria-label={`${subject.title}: ${task.title}`}>
-      <div className="task-card-wrap wide">
+      <div className="task-col wide">
         <header className="ts-top">
-          <button className="ts-back" onClick={goBack}>← {stepIdx > 0 ? "Назад" : "К заданиям"}</button>
+          <button
+            className="screen-back"
+            onClick={goBack}
+            aria-label={stepIdx > 0 ? "Назад" : "К заданиям"}
+          >
+            ←
+          </button>
           <div className="ts-progress">
             {steps.length > 1 ? `Шаг ${stepIdx + 1} из ${steps.length}` : `Задание ${task.order} из ${task.total}`}
           </div>
           <span className="ts-mode" title={modeLabel(task.mode)}>{modeIcon(task.mode)} {modeLabel(task.mode)}</span>
         </header>
+        <div className="task-card-wrap">
 
         <div className="ts-single">
           <h1 className="ts-title">{task.title}</h1>
@@ -172,7 +179,7 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {/* READING */}
           {isReading && (
             <div className="ts-actions">
-              <button className="ts-cta" onClick={goNext}>{isLast ? (nextTaskId ? "Следующая задача →" : "Готово") : "Далее →"}</button>
+              <button className="btn-cta btn-cta--blue ts-cta-slot" onClick={goNext}>{isLast ? (nextTaskId ? "Следующая задача →" : "Готово") : "Далее →"}</button>
             </div>
           )}
 
@@ -235,12 +242,12 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {!isReading && !isManual && (
             <div className="ts-actions">
               {st.phase === "solving" && (
-                <button className="ts-cta" onClick={check}>
+                <button className="btn-cta btn-cta--orange ts-cta-slot" onClick={check}>
                   Завершить ✓
                 </button>
               )}
               {st.phase === "failed" && (
-                <button className="ts-cta" onClick={goNext}>
+                <button className="btn-cta btn-cta--blue ts-cta-slot" onClick={goNext}>
                   {isLast ? (nextTaskId ? "Следующая задача →" : "К предметам →") : "Дальше →"}
                 </button>
               )}
@@ -250,9 +257,10 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
           {/* Аудио: кнопка появляется после загрузки фото (phase correct) */}
           {isManual && st.phase === "correct" && (
             <div className="ts-actions">
-              <button className="ts-cta" onClick={goNext}>{isLast ? (nextTaskId ? "Следующая задача →" : "Завершить") : "Дальше →"}</button>
+              <button className="btn-cta btn-cta--blue ts-cta-slot" onClick={goNext}>{isLast ? (nextTaskId ? "Следующая задача →" : "Завершить") : "Дальше →"}</button>
             </div>
           )}
+        </div>
         </div>
       </div>
     </main>
@@ -267,12 +275,13 @@ function WorksheetView({
 }) {
   return (
     <main className="task-stage" aria-label={`${subjectTitle}: ${task.title}`}>
-      <div className="task-card-wrap wide">
+      <div className="task-col wide">
         <header className="ts-top">
-          <button className="ts-back" onClick={onBack}>← К заданиям</button>
+          <button className="screen-back" onClick={onBack} aria-label="К заданиям">←</button>
           <div className="ts-progress">Задание {task.order} из {task.total}</div>
           <span className="ts-mode">{modeIcon("worksheet")} {modeLabel("worksheet")}</span>
         </header>
+        <div className="task-card-wrap">
         <div className="ts-single">
           <h1 className="ts-title">{task.title}</h1>
           <WorksheetBody prompt={task.prompt} />
@@ -285,9 +294,10 @@ function WorksheetView({
           ) : (
             <>
               <div className="ts-upload-done"><span className="ts-upload-ic">✅</span><p>Решение отправлено взрослому на проверку</p></div>
-              <div className="ts-actions"><button className="ts-cta" onClick={onNext}>{nextTaskId ? "Следующая задача →" : "Готово, на главную"}</button></div>
+              <div className="ts-actions"><button className="btn-cta btn-cta--blue ts-cta-slot" onClick={onNext}>{nextTaskId ? "Следующая задача →" : "Готово, на главную"}</button></div>
             </>
           )}
+        </div>
         </div>
       </div>
     </main>

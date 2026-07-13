@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/session";
 import { WEEK1 } from "@/lib/week1-content";
 import { WEEKS_2_10 } from "@/lib/weeks-content";
 import { SUBJECTS } from "@/types/domain";
@@ -17,7 +19,11 @@ function taskKind(t: { mode: string; steps?: { kind: string }[] }): string {
   return kinds.map((k) => KIND_LABEL[k] ?? k).join(" + ");
 }
 
-export default function PreviewPage() {
+export default async function PreviewPage() {
+  // служебный каталог контента — только для методиста (аудит, решение №6)
+  const session = await getSession();
+  if (session?.role !== "methodist") redirect("/");
+
   return (
     <main className="pv-stage" aria-label="Каталог заданий недели 1">
       <div className="pv-wrap">

@@ -361,3 +361,12 @@
 .tier-label.silver { background: #eef1f7; color: #5d6678; }
 .tier-label.bronze { background: #f7e5d2; color: #8b5a2b; }
 .tier-label.none { background: #eef1f6; color: #9aa5b7; }
+
+/* векторный Мыш (аудит, решение №3) */
+.mascot-drawn {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: visible;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

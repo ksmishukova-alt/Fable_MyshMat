@@ -212,3 +212,9 @@ a.topic-node:hover {
     animation: none;
   }
 }
+
+/* векторный символ темы внутри плитки */
+.topic-glyph-svg {
+  inline-size: 68%;
+  block-size: 68%;
+}

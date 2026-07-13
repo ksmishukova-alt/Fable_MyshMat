@@ -9,7 +9,7 @@ export default function RevisionsPage() {
     <main className="rev-stage" aria-label="Мои доработки">
       <div className="rev-wrap">
         <header className="rev-top">
-          <Link className="rev-back" href="/">← На главную</Link>
+          <Link className="screen-back" aria-label="На главную" href="/">← На главную</Link>
           <h1>Мои доработки</h1>
           <span className="rev-badge">{items.length}</span>
         </header>

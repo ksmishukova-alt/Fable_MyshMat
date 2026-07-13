@@ -3,6 +3,7 @@ import { getCurrentChildId } from "@/lib/session";
 import { getTopicNodes } from "@/lib/olympiad-repo";
 import { TOPICS } from "@/lib/olympiad-bank";
 import { LEVEL_INFO } from "@/types/olympiad";
+import { TopicSymbol } from "@/components/BadgeArt";
 import "./topics.css";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +34,9 @@ export default async function TopicsPage() {
           const inner = (
             <>
               <span className={`topic-glyph ${t.color}`} aria-hidden="true">
-                {t.glyph}
+                <svg viewBox="0 0 40 40" className="topic-glyph-svg">
+                  <TopicSymbol topicId={t.id} tone="#ffffff" />
+                </svg>
               </span>
               <span className="topic-info">
                 <h2>{t.title}</h2>

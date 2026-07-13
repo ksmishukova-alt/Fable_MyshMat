@@ -25,7 +25,7 @@ export default async function SubjectPage({
     <main className="subject-stage" aria-label={`Задания: ${meta.title}`}>
       <div className="subject-board">
         <header className="subject-top">
-          <Link className="back" href="/">← Назад</Link>
+          <Link className="screen-back" href="/" aria-label="На главную">←</Link>
           <div className="subject-head">
             <span className={`subject-glyph s-${subjectId}`}>{meta.glyph}</span>
             <h1>{meta.title}</h1>

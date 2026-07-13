@@ -233,3 +233,8 @@
   font-weight: 900;
   color: #1667e0;
 }
+
+/* векторные глифы игр */
+.du-game .glyph { color: #1667e0; }
+.du-game:nth-child(2) .glyph { color: #6d2ee5; }
+.du-game:nth-child(3) .glyph { color: #e8437f; }

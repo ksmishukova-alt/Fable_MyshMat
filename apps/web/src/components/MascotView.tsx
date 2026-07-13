@@ -1,6 +1,8 @@
 /**
- * Маскот-тамагочи: аватар мыша + SVG-слои нарядов (реально меняются)
- * + рост по ступеням (1–5) от освоенных тем олимпиадного маршрута.
+ * Маскот-тамагочи (награды): рисованный векторный Мыш в синей толстовке —
+ * единый изобразительный язык с аватарами и наклейками (решение аудита №3).
+ * Наряды из лавки — SVG-слои в той же системе координат, сидят органично.
+ * Фото-Мыш остаётся на главной и входе (герой бренда).
  */
 export function MascotView({
   stage,
@@ -18,20 +20,62 @@ export function MascotView({
       style={{ inlineSize: size, blockSize: size }}
       aria-label={`Маскот, ступень роста ${stage}`}
     >
-      <div
-        className="mascot-photo"
-        style={{ transform: `scale(${scale})` }}
+      <svg
+        className="mascot-layers mascot-drawn"
+        viewBox="0 0 100 100"
         aria-hidden="true"
-      />
-      <svg className="mascot-layers" viewBox="0 0 100 100" aria-hidden="true">
+        style={{ transform: `scale(${scale})` }}
+      >
+        {/* фон-кружок */}
+        <circle cx="50" cy="50" r="49" fill="#e9f3ff" />
+        {/* хвост */}
+        <path
+          d="M78 82 Q94 78 92 64"
+          stroke="#b9c6d6"
+          strokeWidth="5"
+          fill="none"
+          strokeLinecap="round"
+        />
+        {/* плащ — ПОД телом */}
         {equipped.includes("cape-purple") && (
           <path
             className="layer-cape"
-            d="M22 55 Q14 78 20 92 L38 84 Q30 70 34 56 Z M78 55 Q86 78 80 92 L62 84 Q70 70 66 56 Z"
+            d="M24 56 Q14 78 20 94 L38 86 Q30 72 34 58 Z M76 56 Q86 78 80 94 L62 86 Q70 72 66 58 Z"
             fill="#7c3aed"
             opacity="0.92"
           />
         )}
+        {/* уши */}
+        <circle cx="29" cy="19" r="12.5" fill="#b9c6d6" />
+        <circle cx="71" cy="19" r="12.5" fill="#b9c6d6" />
+        <circle cx="29" cy="19" r="6.5" fill="#f3b8c6" />
+        <circle cx="71" cy="19" r="6.5" fill="#f3b8c6" />
+        {/* тело — синяя толстовка */}
+        <path d="M20 96 Q20 62 50 62 Q80 62 80 96 Z" fill="#2e77e6" />
+        <path d="M38 65 Q50 71 62 65 L60 74 Q50 78 40 74 Z" fill="#1c5cc4" />
+        <line x1="45" y1="70" x2="44" y2="80" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+        <line x1="55" y1="70" x2="56" y2="80" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.85" />
+        {/* лапки */}
+        <ellipse cx="34" cy="95" rx="8" ry="4.5" fill="#93a3b8" />
+        <ellipse cx="66" cy="95" rx="8" ry="4.5" fill="#93a3b8" />
+        {/* голова */}
+        <ellipse cx="50" cy="40" rx="24" ry="22" fill="#b9c6d6" />
+        <ellipse cx="50" cy="49" rx="14" ry="10" fill="#ffffff" opacity="0.9" />
+        {/* глаза (совпадают с очками-слоем) */}
+        <circle cx="38" cy="38" r="3.4" fill="#22304f" />
+        <circle cx="62" cy="38" r="3.4" fill="#22304f" />
+        <circle cx="39.2" cy="36.8" r="1.2" fill="#fff" />
+        <circle cx="63.2" cy="36.8" r="1.2" fill="#fff" />
+        {/* нос и улыбка */}
+        <ellipse cx="50" cy="45.5" rx="3.4" ry="2.6" fill="#f45d9e" />
+        <path d="M44 52 Q50 56.5 56 52" stroke="#8496ad" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+        {/* усы */}
+        <path d="M22 42 L34 43 M22 48 L34 46 M78 42 L66 43 M78 48 L66 46" stroke="#93a3b8" strokeWidth="1.6" strokeLinecap="round" />
+        {/* щёчки */}
+        <circle cx="33" cy="46" r="3.4" fill="#f8a5bd" opacity="0.55" />
+        <circle cx="67" cy="46" r="3.4" fill="#f8a5bd" opacity="0.55" />
+
+        {/* ── наряды из лавки (те же координаты, что раньше) ── */}
         {equipped.includes("scarf-orange") && (
           <g className="layer-scarf">
             <rect x="30" y="58" width="40" height="9" rx="4.5" fill="#ff8a1e" />

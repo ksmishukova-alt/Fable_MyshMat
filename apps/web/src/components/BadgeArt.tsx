@@ -14,7 +14,7 @@ const METALS: Record<Exclude<BadgeTier, "none">, [string, string, string, string
 };
 
 /** Символ темы (координаты 0..40, центр ~20,20). */
-function TopicSymbol({ topicId, tone }: { topicId: string; tone: string }) {
+export function TopicSymbol({ topicId, tone }: { topicId: string; tone: string }) {
   switch (topicId) {
     case "heads-legs":
       return (

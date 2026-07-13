@@ -1,7 +1,7 @@
 .subject-stage{
   inline-size:100dvw;min-block-size:100dvh;
-  background-image:linear-gradient(180deg,rgba(143,208,255,.10),rgba(154,212,114,.06)),url('/myshmat-assets/background.webp');
-  background-size:cover;background-position:center;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.16),rgba(61,156,64,.10)),url('/myshmat-assets/background.webp');
+  background-size:cover;background-position:center bottom;
   padding:clamp(16px,3vw,40px);
   display:flex;justify-content:center;
 }
@@ -31,8 +31,8 @@
 .s-reading{background:linear-gradient(145deg,#86d953,#209d39)}
 .s-english{background:linear-gradient(145deg,#ff6ba7,#e82377)}
 .subject-head h1{
-  font-family:var(--font-display);font-weight:800;color:#082460;
-  font-size:clamp(24px,3vw,40px);line-height:1;
+  font-family:var(--font-ui);font-weight:800;color:#082460;
+  font-size:clamp(24px,3vw,34px);line-height:1;font-weight:900;
 }
 .subject-count{
   margin-left:auto;background:rgba(255,255,255,.85);border-radius:999px;
@@ -56,7 +56,7 @@
   background:#eef4ff;font-size:clamp(20px,2.2vw,28px);flex:0 0 auto;
 }
 .task-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:clamp(5px,.7vw,9px)}
-.task-title{font-family:var(--font-display);font-weight:800;color:#082460;font-size:clamp(16px,1.8vw,22px);line-height:1.1}
+.task-title{font-family:var(--font-ui);font-weight:800;color:#082460;font-size:clamp(16px,1.8vw,22px);line-height:1.1}
 .task-meta{display:flex;align-items:center;gap:clamp(8px,1vw,12px)}
 .task-pill{
   border:1px solid rgba(61,87,132,.14);border-radius:999px;background:#f7faff;

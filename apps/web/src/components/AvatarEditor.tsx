@@ -98,7 +98,7 @@ export function AvatarEditor({ initial }: { initial: AvatarConfig }) {
             ))}
           </div>
           <button className="av-shuffle" onClick={() => setNonce((n) => n + 1)}>
-            🎲 Перемешать варианты
+            Перемешать варианты
           </button>
         </div>
 
