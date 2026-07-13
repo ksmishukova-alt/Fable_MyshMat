@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabase } from "@/lib/supabase";
-import { getCurrentChildId } from "@/lib/session";
+import { getCurrentChildId, getSession } from "@/lib/session";
+import { sendTelegram, sendReviewRequest, methodistChatId, parentChatId } from "@/lib/telegram";
 import type { StepStat } from "@/types/domain";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -40,6 +41,18 @@ export async function POST(req: Request) {
     body.childId && UUID_RE.test(body.childId)
       ? body.childId
       : await getCurrentChildId();
+  const session = await getSession();
+  const childName = session?.name ?? "Ученик";
+
+  // была ли МышРутка уже выдана сегодня (чтобы не дублировать уведомление)
+  const today = new Date().toISOString().slice(0, 10);
+  const { data: prevSession } = await sb
+    .from("daily_sessions")
+    .select("myshroutka_granted")
+    .eq("child_id", childId)
+    .eq("date", today)
+    .maybeSingle();
+  const wasGranted = !!prevSession?.myshroutka_granted;
 
   // taskId должен быть реальным UUID из БД (на моках сюда не попадаем)
   if (!body.taskId || !UUID_RE.test(body.taskId)) {
@@ -61,12 +74,42 @@ export async function POST(req: Request) {
   const result = data as { ok?: boolean; attemptId?: string } | null;
   const attemptId = result?.attemptId;
 
-  // фото листочка: дописываем URL в созданную попытку
+  // фото листочка: дописываем URL в созданную попытку + сразу зовём методиста
   if (body.solutionUrl && attemptId) {
     await sb
       .from("daily_task_attempts")
       .update({ uploaded_solution_url: body.solutionUrl })
       .eq("id", attemptId);
+    const { data: t } = await sb.from("tasks").select("title").eq("id", body.taskId).maybeSingle();
+    void sendReviewRequest({
+      kind: "daily",
+      attemptId,
+      childName,
+      title: t?.title ?? "задание",
+      photoUrl: body.solutionUrl,
+    });
+  }
+
+  // Daily завершён впервые за сегодня → сводка методисту + поздравление родителю
+  const grantedNow = (data as { myshroutkaGranted?: boolean } | null)?.myshroutkaGranted;
+  if (grantedNow && !wasGranted) {
+    const { count: manualCount } = await sb
+      .from("daily_task_attempts")
+      .select("*", { count: "exact", head: true })
+      .eq("child_id", childId)
+      .eq("status", "submitted")
+      .eq("mode", "worksheet");
+    void sendTelegram(
+      methodistChatId(),
+      `✅ <b>${childName}</b> завершил(а) Daily за сегодня!` +
+        (manualCount
+          ? ` Ручных работ на проверку: <b>${manualCount}</b>.`
+          : " Все задания проверены автоматически."),
+    );
+    void sendTelegram(
+      parentChatId(),
+      `🎉 ${childName} сегодня выполнил(а) весь Daily — отличная работа! МышРутка уже везёт в олимпиадный мир.`,
+    );
   }
 
   // пошаговая аналитика — только если step_id настоящие UUID (иначе пропускаем,

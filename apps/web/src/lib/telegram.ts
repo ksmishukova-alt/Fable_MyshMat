@@ -46,3 +46,65 @@ export function methodistChatId(): string | undefined {
 export function parentChatId(): string | undefined {
   return process.env.TELEGRAM_PARENT_CHAT_ID;
 }
+
+/** Generic-вызов Telegram Bot API. */
+export async function callTelegram(
+  method: string,
+  payload: Record<string, unknown>,
+): Promise<{ ok: boolean; result?: unknown; description?: string }> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return { ok: false, description: "TELEGRAM_BOT_TOKEN не задан" };
+  try {
+    const res = await fetch(`${API}/bot${token}/${method}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(10000),
+    });
+    return (await res.json()) as { ok: boolean; result?: unknown; description?: string };
+  } catch (e) {
+    return { ok: false, description: e instanceof Error ? e.message : "network" };
+  }
+}
+
+/**
+ * Запрос на проверку работы: фото (если есть публичный URL) + кнопки
+ * «Принять / На доработку». В подписи — служебная метка #ref для комментариев-reply.
+ */
+export async function sendReviewRequest(args: {
+  kind: "daily" | "oly";
+  attemptId: string;
+  childName: string;
+  title: string;
+  photoUrl?: string | null;
+}): Promise<boolean> {
+  const chatId = methodistChatId();
+  if (!chatId) return false;
+  const caption =
+    `📝 <b>${args.childName}</b> сдал(а) работу «${args.title}» — нужна проверка.\n` +
+    `#ref:${args.kind}:${args.attemptId}`;
+  const buttons = {
+    inline_keyboard: [
+      [
+        { text: "✅ Принять", callback_data: `rv:${args.kind}:${args.attemptId}:ok` },
+        { text: "❌ На доработку", callback_data: `rv:${args.kind}:${args.attemptId}:no` },
+      ],
+    ],
+  };
+  const hasPhoto = !!args.photoUrl && /^https?:\/\//.test(args.photoUrl);
+  const r = hasPhoto
+    ? await callTelegram("sendPhoto", {
+        chat_id: chatId,
+        photo: args.photoUrl,
+        caption,
+        parse_mode: "HTML",
+        reply_markup: buttons,
+      })
+    : await callTelegram("sendMessage", {
+        chat_id: chatId,
+        text: caption + "\n(фото недоступно — смотри в кабинете)",
+        parse_mode: "HTML",
+        reply_markup: buttons,
+      });
+  return r.ok;
+}

@@ -183,6 +183,10 @@ export function buildWorldState(session: DailySession): WorldState {
 export interface RevisionItem {
   taskId: string;
   subjectId: SubjectId;
+  /** Название задания (для списка доработок). */
+  title?: string;
+  /** Комментарий методиста (из проверки в кабинете или Telegram). */
+  feedback?: string;
 }
 
 export interface RevisionsSummary {

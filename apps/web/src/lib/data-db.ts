@@ -117,7 +117,7 @@ export async function getHomeDataDb(childId: string = DEMO_CHILD): Promise<HomeS
 
   const { data: revisionRows } = await sb
     .from("daily_task_attempts")
-    .select("task_id,tasks(subject)")
+    .select("task_id,review_feedback,tasks(subject,title)")
     .eq("child_id", child.id)
     .eq("status", "needsRevision");
 
@@ -135,10 +135,20 @@ export async function getHomeDataDb(childId: string = DEMO_CHILD): Promise<HomeS
     revisions: {
       count: revisionRows?.length ?? 0,
       items:
-        revisionRows?.map((r) => ({
-          taskId: r.task_id as string,
-          subjectId: one((r as unknown as { tasks?: { subject?: SubjectId } | { subject?: SubjectId }[] }).tasks)?.subject ?? "math",
-        })) ?? [],
+        revisionRows?.map((r) => {
+          const t = one(
+            (r as unknown as {
+              tasks?: { subject?: SubjectId; title?: string } | { subject?: SubjectId; title?: string }[];
+            }).tasks,
+          );
+          return {
+            taskId: r.task_id as string,
+            subjectId: t?.subject ?? "math",
+            title: t?.title,
+            feedback:
+              (r as unknown as { review_feedback?: string | null }).review_feedback ?? undefined,
+          };
+        }) ?? [],
     },
     stickers: await stickersFromDb(child.id),
     week: buildWeek(new Date(), [0, 1], false),

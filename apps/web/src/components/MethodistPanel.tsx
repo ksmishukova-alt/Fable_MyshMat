@@ -506,6 +506,21 @@ function BankTab({ setMsg }: { setMsg: (m: { text: string; err?: boolean }) => v
     }
   }
 
+  async function enableTgButtons() {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/methodist/telegram-webhook", { method: "POST" });
+      const d = (await res.json()) as { ok: boolean; reason?: string };
+      setMsg(
+        d.ok
+          ? { text: "Кнопки включены! Теперь работы приходят с «Принять / На доработку», а комментарий пишется ответом (reply) на сообщение бота." }
+          : { text: `Не удалось: ${d.reason}`, err: true },
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function testTelegram() {
     setBusy(true);
     try {
@@ -531,6 +546,13 @@ function BankTab({ setMsg }: { setMsg: (m: { text: string; err?: boolean }) => v
         </p>
         <button className="mt-btn secondary" disabled={busy} onClick={() => void testTelegram()}>
           Отправить тест в Telegram
+        </button>{" "}
+        <button
+          className="mt-btn secondary"
+          disabled={busy}
+          onClick={() => void enableTgButtons()}
+        >
+          Включить кнопки проверки в TG
         </button>
       </section>
 

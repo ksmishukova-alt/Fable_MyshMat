@@ -16,7 +16,7 @@ import {
 } from "@/types/olympiad";
 import { TOPICS } from "@/lib/olympiad-bank";
 import { loadProblemsFor } from "@/lib/olympiad-bank-db";
-import { sendTelegram, methodistChatId } from "@/lib/telegram";
+import { sendTelegram, sendReviewRequest, methodistChatId } from "@/lib/telegram";
 
 export interface TopicNode {
   topicId: string;
@@ -195,8 +195,9 @@ export async function completeProblem(args: {
 
   // запись попытки
   const status = args.solved ? (args.level === 3 ? "pendingReview" : "solved") : "failed";
+  let dbAttemptId: string | null = null;
   if (db) {
-    await db.from("olympiad_attempts").insert({
+    const ins = await db.from("olympiad_attempts").insert({
       child_id: args.childId,
       problem_id: args.problemId,
       topic_id: args.topicId,
@@ -208,7 +209,8 @@ export async function completeProblem(args: {
       worksheet_url: args.worksheetUrl ?? null,
       answer_given: args.answerGiven ?? null,
       finished_at: new Date().toISOString(),
-    });
+    }).select("id").single();
+    dbAttemptId = (ins.data?.id as string) ?? null;
     await db.from("analytics_events").insert({
       child_id: args.childId,
       kind: args.solved ? "olympiad_solved" : "olympiad_failed",
@@ -284,10 +286,20 @@ export async function completeProblem(args: {
   await saveProgress(p, fails);
 
   if (args.solved && args.level === 3 && args.worksheetUrl) {
-    void sendTelegram(
-      methodistChatId(),
-      `📝 <b>${args.childName}</b> сдал листочек L3 по теме «${args.topicId}» — нужна проверка.`,
-    );
+    if (dbAttemptId) {
+      void sendReviewRequest({
+        kind: "oly",
+        attemptId: dbAttemptId,
+        childName: args.childName,
+        title: `Листочек L3 · ${args.topicId}`,
+        photoUrl: args.worksheetUrl,
+      });
+    } else {
+      void sendTelegram(
+        methodistChatId(),
+        `📝 <b>${args.childName}</b> сдал листочек L3 по теме «${args.topicId}» — нужна проверка.`,
+      );
+    }
   }
 
   return res;
