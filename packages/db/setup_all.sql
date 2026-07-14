@@ -1,7 +1,6 @@
--- МышМат — setup_all.sql: все миграции одним файлом (для Supabase SQL Editor).
--- 0001 init → … → 0010 daily-by-schedule → 0011 cyrillic logins.
+-- МышМат: полная установка (0001–0013). Выполнять в Supabase SQL Editor целиком.
 
--- ═══════════════ packages/db/0001_init.sql ═══════════════
+-- ═══════════ 0001_init.sql ═══════════
 -- МышМат — миграция 0001 (MVP, ТЗ v1 с механикой МышРутки)
 -- Выполняется в Supabase SQL editor или через supabase db push.
 -- Содержит только то, что нужно реализованным экранам:
@@ -220,7 +219,7 @@ end $$;
 -- create policy child_own on daily_sessions for all
 --   using (child_id in (select id from child_profiles where parent_id = auth.uid()));
 
--- ═══════════════ packages/db/0002_seed.sql ═══════════════
+-- ═══════════ 0002_seed.sql ═══════════
 -- МышМат — сид данных (демо-ребёнок Артём + банк заданий, совпадает с моками)
 
 -- ребёнок
@@ -309,7 +308,7 @@ insert into daily_task_configs (subject, task_id, ord) values
   ('english','d0000000-0000-0000-0000-000000000001',1)
 on conflict do nothing;
 
--- ═══════════════ packages/db/0003_auth.sql ═══════════════
+-- ═══════════ 0003_auth.sql ═══════════
 -- МышМат — миграция 0003: вход ребёнка (PIN + короткий код)
 -- Добавляет к child_profiles поля аутентификации, которые использует /api/login.
 
@@ -335,7 +334,7 @@ insert into child_profiles (id, name, grade, stars, short_code)
 values ('22222222-2222-2222-2222-222222222222', 'Маша', 2, 120, 'MISH88')
 on conflict (id) do nothing;
 
--- ═══════════════ packages/db/0004_submit_attempt.sql ═══════════════
+-- ═══════════ 0004_submit_attempt.sql ═══════════
 -- МышМат — миграция 0004: надёжное серверное сохранение попытки
 -- Одна RPC делает всё атомарно:
 --   1. находит/создаёт сегодняшнюю сессию ребёнка
@@ -434,7 +433,7 @@ begin
   );
 end $$;
 
--- ═══════════════ packages/db/0005_platform.sql ═══════════════
+-- ═══════════ 0005_platform.sql ═══════════
 -- МышМат — миграция 0005: полная платформа.
 -- Роли и доступ, олимпиадное ядро (3 уровня), награды/лавка/тамагочи,
 -- планы и расписание, дуэли, платежи, загадка дня, аналитика.
@@ -584,22 +583,6 @@ create table if not exists sticker_ownership (
   primary key (child_id, sticker_id)
 );
 
-create table if not exists shop_items (
-  id text primary key,
-  kind text not null,                       -- outfit|accessory|room|stickerPack
-  title text not null,
-  price_stars int not null,
-  art text not null,
-  description text not null default ''
-);
-
-create table if not exists mascot_state (
-  child_id uuid primary key references child_profiles(id) on delete cascade,
-  equipped jsonb not null default '[]'::jsonb,
-  owned jsonb not null default '[]'::jsonb,
-  updated_at timestamptz not null default now()
-);
-
 create table if not exists star_transactions (
   id uuid primary key default gen_random_uuid(),
   child_id uuid not null references child_profiles(id) on delete cascade,
@@ -688,7 +671,7 @@ begin
   return new_balance;
 end $$;
 
--- ═══════════════ packages/db/0006_seed_users.sql ═══════════════
+-- ═══════════ 0006_seed_users.sql ═══════════
 -- МышМат — миграция 0006: стартовые аккаунты.
 -- Пароли/PIN хэшированы scrypt (см. apps/web/src/lib/hash.ts).
 -- Демо-доступы: дети artem/masha (PIN 1234), методист ks.mishukova@gmail.com (demo1234),
@@ -726,7 +709,7 @@ insert into subscriptions (parent_id, status, plan) values
   ('44444444-4444-4444-4444-444444444444', 'trial', 'monthly')
 on conflict (parent_id) do nothing;
 
--- ═══════════════ packages/db/0007_daily_content.sql ═══════════════
+-- ═══════════ 0007_daily_content.sql ═══════════
 -- МышМат — миграция 0007: банк Daily-контента под все 10 раннеров.
 -- 1) tasks.slug — идемпотентный импорт (TS-сид и CSV).
 -- 2) task_steps.payload — специфика раннера (words/cards/gaps/columns/…).
@@ -749,7 +732,7 @@ do $$ begin alter type step_kind add value if not exists 'listening'; exception 
 do $$ begin alter type step_kind add value if not exists 'proofread'; exception when others then null; end $$;
 do $$ begin alter type step_kind add value if not exists 'readaloud'; exception when others then null; end $$;
 
--- ═══════════════ packages/db/0008_storage.sql ═══════════════
+-- ═══════════ 0008_storage.sql ═══════════
 -- МышМат — миграция 0008: бакеты Storage.
 -- worksheets — фото листочков L3 и письменных заданий; uploads — аудио решения.
 insert into storage.buckets (id, name, public)
@@ -760,7 +743,7 @@ insert into storage.buckets (id, name, public)
 values ('uploads', 'uploads', true)
 on conflict (id) do nothing;
 
--- ═══════════════ packages/db/0009_topics_seed.sql ═══════════════
+-- ═══════════ 0009_topics_seed.sql ═══════════
 -- МышМат — миграция 0009: сид тем олимпиадного маршрута.
 -- ВАЖНО: topic_progress ссылается на olympiad_topics по FK — без этих строк
 -- прогресс не сохранялся бы. Плюс новая тема «Подсчёт фигур».
@@ -780,7 +763,7 @@ on conflict (id) do update set
   ord = excluded.ord,
   has_algebra = excluded.has_algebra;
 
--- ═══════════════ packages/db/0010_daily_by_schedule.sql ═══════════════
+-- ═══════════ 0010_daily_by_schedule.sql ═══════════
 -- МышМат — миграция 0010: Daily-контент привязан к учебному дню расписания.
 -- daily_task_configs.day_index = N-й учебный день (0-based) по расписанию ребёнка.
 -- День ребёнка = число прошедших назначенных дат (включая сегодня) − 1.
@@ -880,7 +863,7 @@ begin
   );
 end $$;
 
--- ═══════════════ packages/db/0011_cyrillic_logins.sql ═══════════════
+-- ═══════════ 0011_cyrillic_logins.sql ═══════════
 -- МышМат — миграция 0011: кириллические логины детей.
 -- Вход нормализуется на сервере: нижний регистр, ё→е.
 -- Демо-логины переводим на кириллицу (е вместо ё — так хранится нормализованная форма).
@@ -890,4 +873,71 @@ update child_profiles set login = 'артем'
 
 update child_profiles set login = 'маша'
  where id = '22222222-2222-2222-2222-222222222222' and (login = 'masha' or login is null);
+
+-- ═══════════ 0012_review_feedback.sql ═══════════
+-- МышМат — миграция 0012: комментарий методиста к Daily-работе
+-- (для отклонения через Telegram-кнопки и показа в «Доработках»).
+alter table daily_task_attempts add column if not exists review_feedback text;
+
+-- ═══════════ 0013_sticker_team.sql ═══════════
+-- 0013: коллекция «Команда МышМат» (Panini-карточки) + удаление тамагочи
+-- Скрипт самодостаточный: можно выполнять на любом состоянии базы, повторно — безопасно.
+
+-- 0) таблицы наклеек (если базу ставили без 0005 — создадим)
+create table if not exists stickers_catalog (
+  id text primary key,
+  title text not null,
+  art text not null,
+  series text not null,
+  rarity text not null default 'common'
+);
+create table if not exists sticker_ownership (
+  child_id uuid not null references child_profiles(id) on delete cascade,
+  sticker_id text not null references stickers_catalog(id) on delete cascade,
+  obtained_at timestamptz not null default now(),
+  primary key (child_id, sticker_id)
+);
+
+-- 1) чистим старый каталог (каскадом уйдут и старые владения наклейками)
+delete from sticker_ownership;
+delete from stickers_catalog;
+
+-- 2) сеем 24 карточки трёх команд (id должны совпадать с apps/web/src/lib/stickers-catalog.ts)
+insert into stickers_catalog (id, title, art, series, rarity) values
+  ('mat-plus', 'Капитан Плюс', 'mat-plus', 'Матемышата', 'epic'),
+  ('mat-chet', 'Королева Чётность', 'mat-chet', 'Матемышата', 'rare'),
+  ('mat-iks', 'Икс Неизвестный', 'mat-iks', 'Матемышата', 'rare'),
+  ('mat-minus', 'Профессор Минус', 'mat-minus', 'Матемышата', 'common'),
+  ('mat-drob', 'Мадам Дробь', 'mat-drob', 'Матемышата', 'common'),
+  ('mat-cirkul', 'Граф Циркуль', 'mat-cirkul', 'Матемышата', 'common'),
+  ('mat-nol', 'Малыш Ноль', 'mat-nol', 'Матемышата', 'common'),
+  ('mat-tablica', 'Тётя Таблица', 'mat-tablica', 'Матемышата', 'common'),
+  ('slo-zapyataya', 'Мисс Запятая', 'slo-zapyataya', 'Словогрызы', 'epic'),
+  ('slo-glagol', 'Дядя Глагол', 'slo-glagol', 'Словогрызы', 'rare'),
+  ('slo-chitaika', 'Читайка Быстрая', 'slo-chitaika', 'Словогрызы', 'rare'),
+  ('slo-bukvoed', 'Буквоед Гоша', 'slo-bukvoed', 'Словогрызы', 'common'),
+  ('slo-suffiks', 'Шёпот Суффикс', 'slo-suffiks', 'Словогрызы', 'common'),
+  ('slo-diktant', 'Пан Диктант', 'slo-diktant', 'Словогрызы', 'common'),
+  ('slo-udarenie', 'Ася Ударение', 'slo-udarenie', 'Словогрызы', 'common'),
+  ('slo-tochka', 'Точка-Непоседа', 'slo-tochka', 'Словогрызы', 'common'),
+  ('eng-cheese', 'Mister Cheese', 'eng-cheese', 'Инглиш Старз', 'epic'),
+  ('eng-hello', 'Captain Hello', 'eng-hello', 'Инглиш Старз', 'rare'),
+  ('eng-apple', 'Lady Apple', 'eng-apple', 'Инглиш Старз', 'rare'),
+  ('eng-sunny', 'Sunny Mouse', 'eng-sunny', 'Инглиш Старз', 'common'),
+  ('eng-bobby', 'Bobby Book', 'eng-bobby', 'Инглиш Старз', 'common'),
+  ('eng-molly', 'Molly Moon', 'eng-molly', 'Инглиш Старз', 'common'),
+  ('eng-danny', 'Danny Dog', 'eng-danny', 'Инглиш Старз', 'common'),
+  ('eng-tiny', 'Tiny Tail', 'eng-tiny', 'Инглиш Старз', 'common')
+on conflict (id) do nothing;
+
+-- 3) тамагочи убран из продукта: сносим его таблицы, если они есть
+do $$
+begin
+  if to_regclass('public.mascot_state') is not null then
+    execute 'drop table public.mascot_state cascade';
+  end if;
+  if to_regclass('public.shop_items') is not null then
+    execute 'drop table public.shop_items cascade';
+  end if;
+end $$;
 

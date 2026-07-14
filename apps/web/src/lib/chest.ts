@@ -36,6 +36,10 @@ const mockStars = new Map<string, number>();
 export function mockOwnedStickers(childId: string): string[] {
   return mockStickers.get(childId) ?? [];
 }
+export function mockGrantSticker(childId: string, stickerId: string): void {
+  const owned = mockStickers.get(childId) ?? [];
+  if (!owned.includes(stickerId)) mockStickers.set(childId, [...owned, stickerId]);
+}
 export function mockStarsBalance(childId: string): number {
   return mockStars.get(childId) ?? 245;
 }
@@ -126,5 +130,5 @@ export async function openChest(
 export function prizeGlyph(prize: ChestPrize): string {
   if (prize.kind === "stars") return "⭐";
   if (prize.kind === "bonus") return "🎟️";
-  return stickerById(prize.stickerId ?? "")?.glyph ?? "🎁";
+  return stickerById(prize.stickerId ?? "") ? "🎴" : "🎁";
 }

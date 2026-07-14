@@ -1334,8 +1334,8 @@
   /* конфетти-залп из центра */
   .fx-confetti {
     position: absolute;
-    inline-size: 11px;
-    block-size: 17px;
+    inline-size: 13px;
+    block-size: 20px;
     border-radius: 3px;
     transform-origin: center;
     animation: fx-shoot 1.1s cubic-bezier(0.16, 0.8, 0.4, 1) both;
@@ -1343,7 +1343,7 @@
   @keyframes fx-shoot {
     0% { translate: 0 0; opacity: 1; scale: 0.6; }
     70% { opacity: 1; }
-    100% { translate: 0 -42vmin; opacity: 0; scale: 1; }
+    100% { translate: 0 -48vmin; opacity: 0; scale: 1; }
   }
   /* звёздный взрыв */
   .fx-star {
@@ -1438,5 +1438,242 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .fx-overlay { display: none; }
+  }
+}
+
+/* ── Реакции v2: вспышка по краям, крупное слово, комбо, кнопка звука ── */
+@layer motion {
+  .fx-flash {
+    position: absolute;
+    inset: 0;
+    animation: fx-flash-fade 0.95s ease-out both;
+  }
+  .fx-flash.good {
+    box-shadow:
+      inset 0 0 0 6px rgba(66, 194, 99, 0.55),
+      inset 0 0 130px 34px rgba(66, 194, 99, 0.26);
+  }
+  .fx-flash.bad {
+    box-shadow:
+      inset 0 0 0 6px rgba(240, 90, 90, 0.5),
+      inset 0 0 130px 34px rgba(240, 90, 90, 0.2);
+  }
+  @keyframes fx-flash-fade {
+    0% { opacity: 0; }
+    12% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .fx-word {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    translate: -50% -50%;
+    font-size: clamp(36px, 7.5vmin, 66px);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    animation: fx-word-pop 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    text-shadow:
+      0 3px 0 rgba(255, 255, 255, 0.92),
+      0 10px 24px rgba(30, 60, 110, 0.3);
+  }
+  .fx-word.good { color: #1f9d4d; }
+  .fx-word.bad {
+    color: #e05656;
+    font-size: clamp(26px, 5.5vmin, 46px);
+  }
+  @keyframes fx-word-pop {
+    0% { scale: 0.3; opacity: 0; rotate: -6deg; }
+    16% { scale: 1.18; opacity: 1; rotate: 2deg; }
+    28% { scale: 1; rotate: 0deg; }
+    80% { opacity: 1; }
+    100% { scale: 0.96; opacity: 0; }
+  }
+  .fx-combo {
+    position: absolute;
+    left: 50%;
+    top: 51%;
+    translate: -50% 0;
+    padding: 6px 18px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #ffb33a, #ff7a00);
+    color: #fff;
+    font-weight: 900;
+    font-size: clamp(16px, 3vmin, 24px);
+    letter-spacing: 0.06em;
+    box-shadow: 0 6px 16px rgba(255, 122, 0, 0.4);
+    animation: fx-word-pop 1.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.12s both;
+  }
+}
+@layer components {
+  .sfx-toggle {
+    position: fixed;
+    left: 14px;
+    bottom: 14px;
+    z-index: 60;
+    inline-size: 42px;
+    block-size: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1.5px solid rgba(37, 75, 131, 0.18);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: #2f5b8f;
+    box-shadow: 0 4px 12px rgba(37, 75, 131, 0.12);
+    transition: background 0.18s ease, translate 0.18s ease;
+  }
+  .sfx-toggle:hover {
+    background: #fff;
+    translate: 0 -2px;
+  }
+}
+
+/* ── Карточка-наклейка «Команда МышМат» (Panini-стиль) ── */
+@layer components {
+  .pcard {
+    --team: #e86a00;
+    --card-bg: #ffe9d1;
+    position: relative;
+    aspect-ratio: 0.72;
+    border-radius: 10px;
+    background: var(--card-bg);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    container-type: inline-size;
+  }
+  /* полутоновый узор, как на печатных карточках */
+  .pcard-halftone {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.55) 1.2px, transparent 1.3px);
+    background-size: 7px 7px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  /* огромная буква команды-вотермарка */
+  .pcard-wm {
+    position: absolute;
+    right: -6cqw;
+    top: -14cqw;
+    font-size: 96cqw;
+    line-height: 1;
+    font-weight: 900;
+    color: var(--team);
+    opacity: 0.16;
+    pointer-events: none;
+    user-select: none;
+  }
+  .pcard-num {
+    position: absolute;
+    right: 5cqw;
+    bottom: 16cqw;
+    font-size: 26cqw;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--team);
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .pcard-photo {
+    inline-size: 72cqw;
+    block-size: 72cqw;
+    margin: 7cqw auto 0;
+    display: block;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 3cqw 4cqw rgba(0, 0, 0, 0.18));
+  }
+  .pcard-plates {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 2.5cqw;
+    padding: 0 6cqw;
+    margin-top: auto;
+  }
+  .pcard-name {
+    justify-self: start;
+    background: var(--team);
+    color: #fff;
+    font-weight: 900;
+    font-size: 8.4cqw;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 2.4cqw 6cqw;
+    border-radius: 999px;
+    white-space: nowrap;
+    max-inline-size: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 2cqw 5cqw rgba(0, 0, 0, 0.18);
+  }
+  .pcard-fact {
+    justify-self: start;
+    background: rgba(255, 255, 255, 0.92);
+    color: #4a4a55;
+    font-weight: 700;
+    font-size: 6.2cqw;
+    padding: 1.8cqw 5cqw;
+    border-radius: 999px;
+    white-space: nowrap;
+    max-inline-size: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pcard-foot {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2cqw;
+    padding: 3cqw 6cqw 4.5cqw;
+  }
+  .pcard-brand {
+    background: #ffd23e;
+    color: #7a4a00;
+    font-weight: 900;
+    font-size: 5.6cqw;
+    letter-spacing: 0.08em;
+    padding: 1.2cqw 3.6cqw;
+    border-radius: 3px;
+    box-shadow: inset 0 0 0 1px rgba(122, 74, 0, 0.35);
+  }
+  .pcard-team {
+    font-weight: 900;
+    font-size: 5.6cqw;
+    color: var(--team);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* фольга у редких */
+  .pcard-foil {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(120deg, #ffd23e22, #ff6ba733 30%, #7fc3ff33 55%, #b98ef733 75%, #ffd23e22);
+    background-size: 300% 300%;
+    animation: pcard-foil-shift 4s linear infinite;
+    opacity: 0.55;
+  }
+  .pcard-foil.epic {
+    opacity: 0.85;
+    box-shadow: inset 0 0 0 2px rgba(255, 178, 32, 0.7);
+  }
+  .pcard.r-rare { box-shadow: inset 0 0 0 2px rgba(127, 195, 255, 0.7); }
+  @keyframes pcard-foil-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pcard-foil { animation: none; }
   }
 }

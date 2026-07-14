@@ -50,9 +50,10 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
   const [uploaded, setUploaded] = useState(false);
   const [manualPhotoUrl, setManualPhotoUrl] = useState<string | null>(null);
   const [fx, setFx] = useState<FxState | null>(null);
+  const [goodStreak, setGoodStreak] = useState(0);
   /** случайный эффект «салют-микса»; новый nonce перезапускает анимацию */
-  function playFx(kind: "good" | "bad") {
-    setFx({ kind, n: Math.floor(Math.random() * 1000) });
+  function playFx(kind: "good" | "bad", streak = 0) {
+    setFx({ kind, n: Math.floor(Math.random() * 1000), streak });
   }
   const [stepIdx, setStepIdx] = useState(0);
   const [states, setStates] = useState<StepState[]>(() => steps.map(freshStep));
@@ -107,19 +108,23 @@ export function TaskScreen({ task, nextTaskId }: { task: TaskContent; nextTaskId
 
     const attempts = st.attempts + 1;
     if (ok) {
-      playFx("good");
+      const streakNow = goodStreak + 1;
+      setGoodStreak(streakNow);
+      playFx("good", streakNow);
       patch({
         attempts,
         phase: "correct",
         solvedFirstTry: attempts === 1 && !st.hintUsed ? true : st.solvedFirstTry,
       });
       // одна кнопка «Завершить»: салют → и сразу дальше
-      window.setTimeout(() => goNext(), 1050);
+      window.setTimeout(() => goNext(), 1250);
     } else if (attempts >= MAX_ATTEMPTS) {
+      setGoodStreak(0);
       playFx("bad");
       patch({ attempts, phase: "failed", hintUsed: true });
     } else {
       // остаёмся на месте: попытка сгорела, подсказка открылась
+      setGoodStreak(0);
       playFx("bad");
       patch({ attempts, phase: "solving", hintUsed: true });
     }

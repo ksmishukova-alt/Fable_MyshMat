@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getSession, getCurrentChildId } from "@/lib/session";
 import { fetchHomeData } from "@/lib/data";
-import { starsBalance, getMascot, getBadges } from "@/lib/rewards-repo";
+import { starsBalance, getBadges } from "@/lib/rewards-repo";
 import { getTopicNodes } from "@/lib/olympiad-repo";
 import { TOPICS } from "@/lib/olympiad-bank";
 import { LEVEL_INFO } from "@/types/olympiad";
@@ -19,10 +19,9 @@ export const dynamic = "force-dynamic";
 export default async function ProfilePage() {
   const session = await getSession();
   const childId = await getCurrentChildId();
-  const [home, stars, mascot, badges, nodes, avatar] = await Promise.all([
+  const [home, stars, badges, nodes, avatar] = await Promise.all([
     fetchHomeData(childId),
     starsBalance(childId),
-    getMascot(childId),
     getBadges(childId),
     getTopicNodes(childId),
     getAvatar(childId),
@@ -43,7 +42,7 @@ export default async function ProfilePage() {
           <AvatarView config={avatar} size={150} />
           <div>
             <div className="pf-name">{session?.name ?? home.profile.name}</div>
-            <div className="pf-grade">{home.profile.grade} класс · ступень Мыша {mascot.growthStage} из 5</div>
+            <div className="pf-grade">{home.profile.grade} класс</div>
             <div className="pf-stat-row">
               <span className="pf-chip stars"><StarIcon size={16} /> {stars} звёзд</span>
               <span className="pf-chip badges"><MedalIcon size={16} /> {badges.filter((b) => b.earned).length} из {badges.length} золотых медалей</span>

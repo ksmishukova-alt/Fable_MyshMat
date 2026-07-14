@@ -63,41 +63,6 @@ export interface TopicBadge {
 }
 
 // ─────────────────────────────────────────────────────────────
-// Лавка и маскот-тамагочи
-// ─────────────────────────────────────────────────────────────
-
-export type ShopItemKind = "outfit" | "accessory" | "room" | "stickerPack";
-
-export interface ShopItem {
-  id: string;
-  kind: ShopItemKind;
-  title: string;
-  priceStars: number;
-  /** id SVG-слоя, который реально меняет маскота/комнату. */
-  art: string;
-  description: string;
-}
-
-/** Состояние маскота: растёт по мере ОЛИМПИАДНОГО маршрута (не Daily). */
-export interface MascotState {
-  childId: string;
-  /** Ступень роста 1..5 — от освоенных тем. */
-  growthStage: number;
-  /** Надетые предметы (id ShopItem). */
-  equipped: string[];
-  /** Купленные предметы. */
-  owned: string[];
-}
-
-export function mascotStage(masteredTopics: number): number {
-  if (masteredTopics >= 8) return 5;
-  if (masteredTopics >= 5) return 4;
-  if (masteredTopics >= 3) return 3;
-  if (masteredTopics >= 1) return 2;
-  return 1;
-}
-
-// ─────────────────────────────────────────────────────────────
 // Загадка дня
 // ─────────────────────────────────────────────────────────────
 

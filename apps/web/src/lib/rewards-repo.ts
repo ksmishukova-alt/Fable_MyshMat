@@ -1,29 +1,13 @@
 /**
- * МышМат — награды: кошелёк, лавка, маскот-тамагочи, загадка дня, значки.
- * Маскот растёт от ОЛИМПИАДНОГО маршрута (mastered-темы), не от Daily.
+ * МышМат — награды: кошелёк, киоск наклеек (пакетики), загадка дня, значки.
+ * Звёзды тратятся на пакетики карточек «Команда МышМат» (3 случайные за пакетик).
  */
 import { getSupabase } from "@/lib/supabase";
-import type { MascotState, ShopItem, DailyRiddle } from "@/types/rewards";
-import { mascotStage } from "@/types/rewards";
-import { mockStarsBalance, mockOwnedStickers } from "@/lib/chest";
+import type { DailyRiddle } from "@/types/rewards";
+import { mockStarsBalance, mockOwnedStickers, mockGrantSticker, mockSpendStars } from "@/lib/chest";
 import { getTopicNodes } from "@/lib/olympiad-repo";
 import { TOPICS } from "@/lib/olympiad-bank";
-
-// ─────────────────────────────────────────────
-// Лавка (SVG-слои маскота — components/MascotView.tsx)
-// ─────────────────────────────────────────────
-export const SHOP_ITEMS: ShopItem[] = [
-  { id: "cap-blue", kind: "outfit", title: "Кепка чемпиона", priceStars: 40, art: "cap-blue", description: "Синяя кепка для смелых идей" },
-  { id: "scarf-orange", kind: "outfit", title: "Оранжевый шарф", priceStars: 30, art: "scarf-orange", description: "Тепло и стильно" },
-  { id: "glasses", kind: "accessory", title: "Умные очки", priceStars: 50, art: "glasses", description: "Видно каждую закономерность" },
-  { id: "crown", kind: "outfit", title: "Корона олимпиадника", priceStars: 120, art: "crown", description: "Для настоящих чемпионов" },
-  { id: "cape-purple", kind: "outfit", title: "Плащ супергероя", priceStars: 80, art: "cape-purple", description: "Развевается от скорости мысли" },
-  { id: "flag", kind: "accessory", title: "Флажок победы", priceStars: 25, art: "flag", description: "Отмечай каждую вершину" },
-];
-
-export function shopItemById(id: string): ShopItem | undefined {
-  return SHOP_ITEMS.find((i) => i.id === id);
-}
+import { STICKER_CATALOG, type CatalogSticker } from "@/lib/stickers-catalog";
 
 // ─────────────────────────────────────────────
 // Кошелёк
@@ -38,83 +22,79 @@ export async function starsBalance(childId: string): Promise<number> {
 }
 
 // ─────────────────────────────────────────────
-// Маскот
+// Киоск наклеек: пакетик из 3 случайных карточек
 // ─────────────────────────────────────────────
-const mockMascot = new Map<string, MascotState>();
+export const PACK_PRICE = 25;
+export const PACK_SIZE = 3;
 
-export async function getMascot(childId: string): Promise<MascotState> {
+const RARITY_WEIGHT: Record<CatalogSticker["rarity"], number> = {
+  common: 70,
+  rare: 25,
+  epic: 5,
+};
+
+export async function ownedStickerIds(childId: string): Promise<string[]> {
   const db = getSupabase();
-  const masteredCount = (await getTopicNodes(childId)).filter((n) => n.mastered).length;
-  const stage = mascotStage(masteredCount);
   if (db) {
-    const { data } = await db.from("mascot_state").select("*").eq("child_id", childId).maybeSingle();
-    return {
-      childId,
-      growthStage: stage,
-      equipped: (data?.equipped as string[]) ?? [],
-      owned: (data?.owned as string[]) ?? [],
-    };
+    const { data } = await db
+      .from("sticker_ownership")
+      .select("sticker_id")
+      .eq("child_id", childId);
+    return (data ?? []).map((r) => r.sticker_id as string);
   }
-  const m = mockMascot.get(childId);
-  return { childId, growthStage: stage, equipped: m?.equipped ?? [], owned: m?.owned ?? [] };
+  return mockOwnedStickers(childId);
 }
 
-export async function buyItem(
-  childId: string,
-  itemId: string,
-): Promise<{ ok: boolean; reason?: string; balance?: number }> {
-  const item = shopItemById(itemId);
-  if (!item) return { ok: false, reason: "unknown item" };
-  const mascot = await getMascot(childId);
-  if (mascot.owned.includes(itemId)) return { ok: false, reason: "already owned" };
+function pullWeighted(pool: CatalogSticker[]): CatalogSticker {
+  const total = pool.reduce((acc, s) => acc + RARITY_WEIGHT[s.rarity], 0);
+  let r = Math.random() * total;
+  for (const s of pool) {
+    r -= RARITY_WEIGHT[s.rarity];
+    if (r <= 0) return s;
+  }
+  return pool[pool.length - 1];
+}
+
+export interface PackResult {
+  ok: boolean;
+  reason?: string;
+  stickers?: string[];
+  balance?: number;
+}
+
+/** Покупка пакетика: списывает звёзды, выдаёт до 3 недостающих карточек. */
+export async function buyStickerPack(childId: string): Promise<PackResult> {
+  const owned = await ownedStickerIds(childId);
+  const missing = STICKER_CATALOG.filter((s) => !owned.includes(s.id));
+  if (missing.length === 0) return { ok: false, reason: "collection-complete" };
+
   const balance = await starsBalance(childId);
-  if (balance < item.priceStars) return { ok: false, reason: "not enough stars" };
+  if (balance < PACK_PRICE) return { ok: false, reason: "not-enough-stars" };
+
+  const pool = [...missing];
+  const pulls: string[] = [];
+  for (let i = 0; i < PACK_SIZE && pool.length > 0; i++) {
+    const pick = pullWeighted(pool);
+    pulls.push(pick.id);
+    pool.splice(pool.indexOf(pick), 1);
+  }
 
   const db = getSupabase();
   if (db) {
     await db.rpc("add_stars", {
       p_child: childId,
-      p_delta: -item.priceStars,
-      p_reason: "shop",
-      p_ref: itemId,
+      p_delta: -PACK_PRICE,
+      p_reason: "sticker-pack",
+      p_ref: pulls.join(","),
     });
-    await db.from("mascot_state").upsert({
-      child_id: childId,
-      owned: [...mascot.owned, itemId],
-      equipped: [...mascot.equipped, itemId],
-      updated_at: new Date().toISOString(),
-    });
-    return { ok: true, balance: balance - item.priceStars };
-  }
-  mockMascot.set(childId, {
-    ...mascot,
-    owned: [...mascot.owned, itemId],
-    equipped: [...mascot.equipped, itemId],
-  });
-  // мок-звёзды хранятся в chest.ts — там же спишем
-  const { mockSpendStars } = await import("@/lib/chest");
-  mockSpendStars(childId, item.priceStars);
-  return { ok: true, balance: balance - item.priceStars };
-}
-
-export async function toggleEquip(childId: string, itemId: string): Promise<MascotState> {
-  const mascot = await getMascot(childId);
-  if (!mascot.owned.includes(itemId)) return mascot;
-  const equipped = mascot.equipped.includes(itemId)
-    ? mascot.equipped.filter((x) => x !== itemId)
-    : [...mascot.equipped, itemId];
-  const db = getSupabase();
-  if (db) {
-    await db.from("mascot_state").upsert({
-      child_id: childId,
-      owned: mascot.owned,
-      equipped,
-      updated_at: new Date().toISOString(),
-    });
+    await db
+      .from("sticker_ownership")
+      .upsert(pulls.map((id) => ({ child_id: childId, sticker_id: id })));
   } else {
-    mockMascot.set(childId, { ...mascot, equipped });
+    mockSpendStars(childId, PACK_PRICE);
+    for (const id of pulls) mockGrantSticker(childId, id);
   }
-  return { ...mascot, equipped };
+  return { ok: true, stickers: pulls, balance: balance - PACK_PRICE };
 }
 
 // ─────────────────────────────────────────────

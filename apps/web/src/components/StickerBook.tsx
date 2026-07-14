@@ -7,8 +7,8 @@
  */
 import { useState } from "react";
 import Link from "next/link";
-import { STICKER_CATALOG, type CatalogSticker } from "@/lib/stickers-catalog";
-import { StickerArt } from "@/components/StickerArt";
+import { STICKER_CATALOG, stickerById, type CatalogSticker } from "@/lib/stickers-catalog";
+import { StickerCard } from "@/components/StickerCard";
 
 interface PageSpec {
   kind: "cover" | "series";
@@ -105,8 +105,15 @@ function CoverPage({ collected, total }: { collected: number; total: number }) {
         Мыш<span>Мат</span>
       </div>
       <div className="cover-title">Альбом наклеек</div>
-      <div className="cover-badge">
-        <StickerArt art="mouse-medal" size={92} />
+      <div className="cover-fan" aria-hidden="true">
+        {["slo-zapyataya", "mat-plus", "eng-cheese"].map((id, i) => {
+          const s = stickerById(id);
+          return s ? (
+            <span key={id} className={`cover-fan-card f${i}`}>
+              <StickerCard sticker={s} num={1} size={96} />
+            </span>
+          ) : null;
+        })}
       </div>
       <div className="cover-count">
         Собрано <b>{collected}</b> из <b>{total}</b>
@@ -151,8 +158,7 @@ function SeriesPage({
               <span className="slot-num">{n + 1}</span>
               {has ? (
                 <>
-                  <StickerArt art={s.art} size={52} />
-                  <b>{s.title}</b>
+                  <StickerCard sticker={s} num={n + 1} />
                   <span className="slot-shine" aria-hidden="true" />
                 </>
               ) : (
@@ -163,15 +169,12 @@ function SeriesPage({
                   <b>№{n + 1}</b>
                 </>
               )}
-              {s.rarity !== "common" && has && (
-                <span className={`slot-foil ${s.rarity}`} aria-hidden="true" />
-              )}
             </div>
           );
         })}
       </div>
       <div className="series-footer">
-        {got === items.length ? "Серия собрана целиком — вот это коллекция! 🏆" : "Наклейки прячутся в ежедневном сундуке."}
+        {got === items.length ? "Серия собрана целиком — вот это коллекция! 🏆" : "Герои прячутся в сундуке и в пакетиках из киоска наград."}
       </div>
       <span className="page-corner" aria-hidden="true" />
       <Link className="series-chest-link" href="/chests">

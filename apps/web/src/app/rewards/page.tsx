@@ -1,25 +1,25 @@
 "use client";
 
 /**
- * Награды: маскот-тамагочи (SVG-наряды), лавка за звёзды,
+ * Награды: киоск наклеек (пакетики за звёзды, как настоящие коллекции),
  * значки-темы (карта мышления), загадка дня.
  */
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MascotView, ItemArt } from "@/components/MascotView";
 import { BadgeArt, type BadgeTier } from "@/components/BadgeArt";
-import { MouseIcon, ShopIcon, MedalIcon, BrainIcon, StarIcon } from "@/components/Icons";
-import type { MascotState, ShopItem } from "@/types/rewards";
+import { StickerCard } from "@/components/StickerCard";
+import { AlbumIcon, MedalIcon, BrainIcon, StarIcon } from "@/components/Icons";
+import { stickerById, stickerNumber } from "@/lib/stickers-catalog";
 import "./rewards.css";
 
 interface RewardsData {
   stars: number;
-  mascot: MascotState;
   badges: { topicId: string; title: string; glyph: string; color: string; earned: boolean; tier: BadgeTier }[];
-  shop: ShopItem[];
+  stickers: { total: number; owned: string[]; packPrice: number };
   riddle: { question: string; hint: string; rewardStars: number; solved: boolean };
 }
 
+type PackPhase = "idle" | "opening" | "revealed";
 
 export default function RewardsPage() {
   const [data, setData] = useState<RewardsData | null>(null);
@@ -27,6 +27,9 @@ export default function RewardsPage() {
   const [riddleAnswer, setRiddleAnswer] = useState("");
   const [riddleMsg, setRiddleMsg] = useState<string | null>(null);
   const [showHint, setShowHint] = useState(false);
+  const [packPhase, setPackPhase] = useState<PackPhase>("idle");
+  const [packCards, setPackCards] = useState<string[]>([]);
+  const [packMsg, setPackMsg] = useState<string | null>(null);
 
   useEffect(() => {
     void reload();
@@ -37,17 +40,38 @@ export default function RewardsPage() {
     setData(d);
   }
 
-  async function shopAction(action: "buy" | "equip", itemId: string) {
+  async function buyPack() {
+    if (packPhase !== "idle") return;
+    setPackMsg(null);
+    setPackPhase("opening");
     const res = await fetch("/api/rewards/shop", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, itemId }),
+      body: JSON.stringify({ action: "pack" }),
     });
-    if (res.ok && action === "buy") {
-      setBump(true);
-      setTimeout(() => setBump(false), 550);
+    const d = (await res.json()) as { ok: boolean; reason?: string; stickers?: string[] };
+    if (!res.ok || !d.ok || !d.stickers) {
+      setPackPhase("idle");
+      setPackMsg(
+        d.reason === "not-enough-stars"
+          ? "Пока не хватает звёзд — заработай их в Daily и олимпиаде!"
+          : d.reason === "collection-complete"
+            ? "Вся коллекция уже собрана — ты чемпион!"
+            : "Не получилось купить пакетик, попробуй ещё раз.",
+      );
+      return;
     }
+    // пакетик «рвётся» ~1.2s, потом веер карточек
+    setPackCards(d.stickers);
+    setBump(true);
+    setTimeout(() => setBump(false), 550);
+    setTimeout(() => setPackPhase("revealed"), 1200);
     await reload();
+  }
+
+  function closePack() {
+    setPackPhase("idle");
+    setPackCards([]);
   }
 
   async function answerRiddle() {
@@ -79,6 +103,8 @@ export default function RewardsPage() {
   }
 
   const earnedCount = data.badges.filter((b) => b.earned).length;
+  const collected = data.stickers.owned.length;
+  const complete = collected >= data.stickers.total;
 
   return (
     <main className="rw-stage" aria-label="Награды">
@@ -94,55 +120,46 @@ export default function RewardsPage() {
         </div>
 
         <div className="rw-grid">
-          {/* Маскот */}
-          <section className="rw-card mascot-card">
-            <h2><MouseIcon /> Твой Мыш</h2>
-            <div className="sub">Растёт от пройденных тем олимпиадного маршрута</div>
-            <MascotView stage={data.mascot.growthStage} equipped={data.mascot.equipped} size={190} />
-            <div className="growth-row" aria-label={`Ступень роста: ${data.mascot.growthStage} из 5`}>
-              {[1, 2, 3, 4, 5].map((i) => (
-                <i key={i} className={i <= data.mascot.growthStage ? "on" : ""} />
-              ))}
+          {/* Киоск наклеек */}
+          <section className="rw-card kiosk-card">
+            <h2><AlbumIcon /> Киоск наклеек</h2>
+            <div className="sub">
+              Собрано {collected} из {data.stickers.total} карточек «Команды МышМат»
             </div>
-            <div className="growth-note">
-              Ступень {data.mascot.growthStage} из 5 · приручай темы — Мыш подрастёт!
-            </div>
-          </section>
-
-          {/* Лавка */}
-          <section className="rw-card">
-            <h2><ShopIcon /> Лавка</h2>
-            <div className="sub">Трать звёзды — наряды по-настоящему появляются на Мыше</div>
-            <div className="shop-grid">
-              {data.shop.map((item) => {
-                const owned = data.mascot.owned.includes(item.id);
-                const equipped = data.mascot.equipped.includes(item.id);
-                return (
-                  <div className="shop-item" key={item.id}>
-                    <span className="glyph" aria-hidden="true">
-                      <ItemArt art={item.art} size={42} />
-                    </span>
-                    <b>{item.title}</b>
-                    <span className="desc">{item.description}</span>
-                    {owned ? (
-                      <button
-                        className={`equip${equipped ? " on" : ""}`}
-                        onClick={() => void shopAction("equip", item.id)}
-                      >
-                        {equipped ? "✓ Надето" : "Надеть"}
-                      </button>
-                    ) : (
-                      <button
-                        className="buy"
-                        disabled={data.stars < item.priceStars}
-                        onClick={() => void shopAction("buy", item.id)}
-                      >
-                        <StarIcon size={16} /> {item.priceStars}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="kiosk-row">
+              <button
+                type="button"
+                className={`pack${packPhase === "opening" ? " tearing" : ""}`}
+                onClick={() => void buyPack()}
+                disabled={packPhase !== "idle" || complete || data.stars < data.stickers.packPrice}
+                aria-label="Купить пакетик наклеек"
+              >
+                <span className="pack-body">
+                  <span className="pack-logo">МЫШМАТ</span>
+                  <span className="pack-title">КОМАНДА</span>
+                  <span className="pack-count">3 карточки</span>
+                </span>
+                <span className="pack-tear" aria-hidden="true" />
+              </button>
+              <div className="kiosk-info">
+                <p>
+                  В каждом пакетике — <b>3 случайные карточки</b>. Попадаются редкие с фольгой
+                  и суперредкие капитаны команд!
+                </p>
+                <button
+                  className="btn-cta btn-cta--orange"
+                  disabled={packPhase !== "idle" || complete || data.stars < data.stickers.packPrice}
+                  onClick={() => void buyPack()}
+                >
+                  {complete ? "Всё собрано!" : (
+                    <>Купить пакетик · <StarIcon size={16} /> {data.stickers.packPrice}</>
+                  )}
+                </button>
+                <Link className="kiosk-album-link" href="/stickers">
+                  Открыть альбом ▶
+                </Link>
+                {packMsg && <div className="kiosk-msg">{packMsg}</div>}
+              </div>
             </div>
           </section>
 
@@ -204,14 +221,55 @@ export default function RewardsPage() {
                   <button className="rw-hint-btn" onClick={() => setShowHint(true)}>
                     💡 Подсказка
                   </button>
-                  {showHint && <span className="growth-note">{data.riddle.hint}</span>}
+                  {showHint && <span className="riddle-note">{data.riddle.hint}</span>}
                 </div>
-                {riddleMsg && <div className="growth-note">{riddleMsg}</div>}
+                {riddleMsg && <div className="riddle-note">{riddleMsg}</div>}
               </>
             )}
           </section>
         </div>
       </div>
+
+      {/* Вскрытие пакетика */}
+      {packPhase !== "idle" && (
+        <div className="pack-modal" role="dialog" aria-label="Пакетик наклеек">
+          {packPhase === "opening" ? (
+            <div className="pack pack-big tearing" aria-hidden="true">
+              <span className="pack-body">
+                <span className="pack-logo">МЫШМАТ</span>
+                <span className="pack-title">КОМАНДА</span>
+                <span className="pack-count">3 карточки</span>
+              </span>
+              <span className="pack-tear" />
+            </div>
+          ) : (
+            <div className="pack-reveal">
+              <div className="pack-reveal-title">Твои новые карточки!</div>
+              <div className="pack-cards">
+                {packCards.map((id, i) => {
+                  const s = stickerById(id);
+                  return s ? (
+                    <div className="pack-card" style={{ animationDelay: `${i * 0.18}s` }} key={id}>
+                      <StickerCard sticker={s} num={stickerNumber(id)} size={140} />
+                      <span className={`pack-card-rarity ${s.rarity}`}>
+                        {s.rarity === "epic" ? "СУПЕРРЕДКАЯ!" : s.rarity === "rare" ? "Редкая!" : "Новичок в команде"}
+                      </span>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+              <div className="pack-reveal-actions">
+                <button className="btn-cta btn-cta--blue" onClick={closePack}>
+                  Класс! <span>▶</span>
+                </button>
+                <Link className="kiosk-album-link light" href="/stickers">
+                  В альбом ▶
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }

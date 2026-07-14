@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { ChestState, ChestPrize } from "@/types/rewards";
-import { stickerById } from "@/lib/stickers-catalog";
-import { StickerArt } from "@/components/StickerArt";
+import { stickerById, stickerNumber } from "@/lib/stickers-catalog";
+import { StickerCard } from "@/components/StickerCard";
 import { StarIcon, TicketIcon } from "@/components/Icons";
 import "./chests.css";
 
@@ -86,8 +86,12 @@ export default function ChestsPage() {
         {prize && (
           <div className="prize-pop" role="status">
             <span className="prize-glyph">
-              {prize.kind === "sticker" && prize.stickerId ? (
-                <StickerArt art={stickerById(prize.stickerId)?.art ?? ""} size={84} />
+              {prize.kind === "sticker" && prize.stickerId && stickerById(prize.stickerId) ? (
+                <StickerCard
+                  sticker={stickerById(prize.stickerId)!}
+                  num={stickerNumber(prize.stickerId)}
+                  size={120}
+                />
               ) : prize.kind === "bonus" ? (
                 <span style={{ color: "#6d2ee5" }}><TicketIcon size={72} /></span>
               ) : (

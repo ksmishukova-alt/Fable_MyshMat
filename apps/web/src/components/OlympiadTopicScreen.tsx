@@ -84,7 +84,9 @@ export function OlympiadTopicScreen({
   });
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [fx, setFx] = useState<FxState | null>(null);
-  const playFx = (kind: "good" | "bad") => setFx({ kind, n: Math.floor(Math.random() * 1000) });
+  const [goodStreak, setGoodStreak] = useState(0);
+  const playFx = (kind: "good" | "bad", streak = 0) =>
+    setFx({ kind, n: Math.floor(Math.random() * 1000), streak });
   const startRef = useRef(Date.now());
   const hintIdxRef = useRef(0);
 
@@ -131,6 +133,7 @@ export function OlympiadTopicScreen({
       setResult(r);
       setPhase("failed");
     } else {
+      setGoodStreak(0);
       playFx("bad");
       setBubble({ tone: "bad", text: w === 1 ? "Хм, не то. Попробуй ещё!" : "Ещё одна попытка — думай смелее!" });
     }
@@ -147,7 +150,9 @@ export function OlympiadTopicScreen({
       answerGiven,
       worksheetUrl,
     });
-    playFx("good");
+    const streakNow = goodStreak + 1;
+    setGoodStreak(streakNow);
+    playFx("good", streakNow);
     setResult(r);
     setPhase("solved");
     if (r.levelUp || r.mastered) setShowLevelUp(true);
